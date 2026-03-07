@@ -1,19 +1,30 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Radar, Radio, ChevronLeft, ChevronRight, RefreshCw, Wifi, WifiOff, Route } from 'lucide-react';
+import { Radar, Radio, ChevronLeft, ChevronRight, RefreshCw, Wifi, WifiOff, Route, Link2, Grid3x3 } from 'lucide-react';
 import OSINTMap from '@/components/OSINTMap';
 import LayerControl from '@/components/LayerControl';
 import AlertsPanel from '@/components/AlertsPanel';
 import ActivityFeed from '@/components/ActivityFeed';
 import StatsBar from '@/components/StatsBar';
 import EntityDetail from '@/components/EntityDetail';
+import TimelineControl from '@/components/TimelineControl';
 import { useOSINTData } from '@/hooks/useOSINTData';
 import { EntityType, MapEntity } from '@/data/mockData';
 
 export default function Index() {
-  const { entities, alerts, activity, stats, lastUpdate, isLive, setIsLive, refresh, trails, showTrails, setShowTrails } = useOSINTData(5000);
+  const {
+    entities, alerts, activity, stats, lastUpdate,
+    isLive, setIsLive, refresh,
+    trails, showTrails, setShowTrails,
+    links, showLinks, setShowLinks,
+    timelinePosition, setTimelinePosition,
+    isReplayPlaying, setIsReplayPlaying,
+    replaySpeed, setReplaySpeed,
+  } = useOSINTData(5000);
+
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [selectedEntity, setSelectedEntity] = useState<MapEntity | null>(null);
+  const [showGrid, setShowGrid] = useState(true);
   const [visibleLayers, setVisibleLayers] = useState<Record<EntityType, boolean>>({
     aircraft: true,
     ship: true,
@@ -45,36 +56,33 @@ export default function Index() {
             MIDDLE EAST THEATER
           </span>
         </div>
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => setIsLive(!isLive)}
-            className={`flex items-center gap-1.5 px-2 py-1 rounded text-[10px] font-mono transition-all ${
-              isLive ? 'bg-primary/10 text-primary border border-primary/30' : 'bg-secondary text-muted-foreground border border-border'
-            }`}
-          >
-            {isLive ? <Wifi className="w-3 h-3" /> : <WifiOff className="w-3 h-3" />}
-            {isLive ? 'LIVE' : 'PAUSED'}
-          </button>
-          <button
-            onClick={() => setShowTrails(!showTrails)}
-            className={`flex items-center gap-1.5 px-2 py-1 rounded text-[10px] font-mono transition-all ${
-              showTrails ? 'bg-accent/10 text-accent border border-accent/30' : 'bg-secondary text-muted-foreground border border-border'
-            }`}
-          >
-            <Route className="w-3 h-3" />
-            TRAILS
-          </button>
+        <div className="flex items-center gap-2">
+          <HeaderBtn active={isLive} onClick={() => setIsLive(!isLive)}
+            icon={isLive ? <Wifi className="w-3 h-3" /> : <WifiOff className="w-3 h-3" />}
+            label={isLive ? 'LIVE' : 'PAUSED'} activeClass="bg-primary/10 text-primary border-primary/30"
+          />
+          <HeaderBtn active={showTrails} onClick={() => setShowTrails(!showTrails)}
+            icon={<Route className="w-3 h-3" />} label="TRAILS"
+            activeClass="bg-accent/10 text-accent border-accent/30"
+          />
+          <HeaderBtn active={showLinks} onClick={() => setShowLinks(!showLinks)}
+            icon={<Link2 className="w-3 h-3" />} label="LINKS"
+            activeClass="bg-strategic/10 text-strategic border-strategic/30"
+          />
+          <HeaderBtn active={showGrid} onClick={() => setShowGrid(!showGrid)}
+            icon={<Grid3x3 className="w-3 h-3" />} label="GRID"
+            activeClass="bg-muted-foreground/10 text-muted-foreground border-muted-foreground/30"
+          />
           <button
             onClick={refresh}
             className="flex items-center gap-1.5 px-2 py-1 rounded text-[10px] font-mono text-muted-foreground hover:text-foreground bg-secondary border border-border transition-all"
           >
             <RefreshCw className="w-3 h-3" />
-            REFRESH
           </button>
           <div className="flex items-center gap-1.5">
             <Radio className={`w-3 h-3 ${isLive ? 'text-primary blink' : 'text-muted-foreground'}`} />
             <span className="text-[9px] font-mono text-muted-foreground">
-              UPD: {lastUpdate.toLocaleTimeString()}
+              {lastUpdate.toLocaleTimeString()}
             </span>
           </div>
         </div>
@@ -94,18 +102,36 @@ export default function Index() {
             selectedEntity={selectedEntity}
             trails={trails}
             showTrails={showTrails}
+            links={links}
+            showLinks={showLinks}
           />
-          {/* Scanline overlay */}
-          <div className="absolute inset-0 scanline pointer-events-none z-[400]" />
+
+          {/* Grid + Scanline overlay */}
+          {showGrid && <div className="absolute inset-0 grid-bg pointer-events-none z-[400] opacity-30" />}
+          <div className="absolute inset-0 scanline pointer-events-none z-[401]" />
 
           {/* Entity Detail Overlay */}
           <AnimatePresence>
             {selectedEntity && (
-              <div className="absolute bottom-4 left-4 z-[500] w-80">
-                <EntityDetail entity={selectedEntity} onClose={() => setSelectedEntity(null)} />
+              <div className="absolute bottom-16 left-4 z-[500] w-80">
+                <EntityDetail
+                  entity={selectedEntity}
+                  onClose={() => setSelectedEntity(null)}
+                  trails={trails}
+                />
               </div>
             )}
           </AnimatePresence>
+
+          {/* Timeline Control */}
+          <TimelineControl
+            isPlaying={isReplayPlaying}
+            onTogglePlay={() => setIsReplayPlaying(!isReplayPlaying)}
+            playbackSpeed={replaySpeed}
+            onSpeedChange={setReplaySpeed}
+            currentTime={timelinePosition}
+            onTimeChange={setTimelinePosition}
+          />
         </div>
 
         {/* Sidebar Toggle */}
@@ -128,26 +154,53 @@ export default function Index() {
               className="h-full border-l border-border bg-card overflow-hidden flex-shrink-0"
             >
               <div className="w-[320px] h-full overflow-y-auto p-3 space-y-4">
-                {/* Layers */}
                 <Section title="MAP LAYERS">
                   <LayerControl visibleLayers={visibleLayers} onToggle={toggleLayer} counts={layerCounts} />
                 </Section>
 
-                {/* Alerts */}
-                <Section title="ALERTS" badge={alerts.filter(a => a.severity === 'critical').length}>
+                <Section title="THREAT ALERTS" badge={alerts.filter(a => a.severity === 'critical').length}>
                   <AlertsPanel alerts={alerts} />
                 </Section>
 
-                {/* Activity */}
                 <Section title="ACTIVITY FEED">
                   <ActivityFeed events={activity} />
                 </Section>
+
+                {links.length > 0 && (
+                  <Section title="LINK ANALYSIS" badge={links.length}>
+                    <div className="space-y-1">
+                      {links.slice(0, 6).map(link => (
+                        <div key={link.id} className="flex items-center gap-2 px-2 py-1.5 rounded bg-secondary/30 text-[9px] font-mono">
+                          <Link2 className="w-2.5 h-2.5 text-strategic flex-shrink-0" />
+                          <span className="text-strategic">{link.reason}</span>
+                          <span className="text-muted-foreground ml-auto">{Math.round(link.distance)}km</span>
+                        </div>
+                      ))}
+                    </div>
+                  </Section>
+                )}
               </div>
             </motion.aside>
           )}
         </AnimatePresence>
       </div>
     </div>
+  );
+}
+
+function HeaderBtn({ active, onClick, icon, label, activeClass }: {
+  active: boolean; onClick: () => void; icon: React.ReactNode; label: string; activeClass: string;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`flex items-center gap-1.5 px-2 py-1 rounded text-[10px] font-mono transition-all border ${
+        active ? activeClass : 'bg-secondary text-muted-foreground border-border'
+      }`}
+    >
+      {icon}
+      {label}
+    </button>
   );
 }
 
