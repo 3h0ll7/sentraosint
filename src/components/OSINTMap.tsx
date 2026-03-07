@@ -3,12 +3,16 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { MapEntity, EntityType } from '@/data/mockData';
 import { useEffect, useMemo } from 'react';
+import TrailLayer from '@/components/TrailLayer';
+import { TrailHistory } from '@/hooks/useOSINTData';
 
 interface OSINTMapProps {
   entities: MapEntity[];
   visibleLayers: Record<EntityType, boolean>;
   onEntitySelect?: (entity: MapEntity) => void;
   selectedEntity?: MapEntity | null;
+  trails: TrailHistory;
+  showTrails: boolean;
 }
 
 const ICON_COLORS: Record<EntityType, string> = {
@@ -71,11 +75,17 @@ function FlyToEntity({ entity }: { entity: MapEntity | null }) {
   return null;
 }
 
-export default function OSINTMap({ entities, visibleLayers, onEntitySelect, selectedEntity }: OSINTMapProps) {
+export default function OSINTMap({ entities, visibleLayers, onEntitySelect, selectedEntity, trails, showTrails }: OSINTMapProps) {
   const filteredEntities = useMemo(
     () => entities.filter(e => visibleLayers[e.type]),
     [entities, visibleLayers]
   );
+
+  const entityTypes = useMemo(() => {
+    const map: Record<string, EntityType> = {};
+    entities.forEach(e => { map[e.id] = e.type; });
+    return map;
+  }, [entities]);
 
   return (
     <MapContainer
@@ -94,6 +104,7 @@ export default function OSINTMap({ entities, visibleLayers, onEntitySelect, sele
         attribution=""
       />
       <FlyToEntity entity={selectedEntity ?? null} />
+      <TrailLayer trails={trails} visible={showTrails} entityTypes={entityTypes} />
       {filteredEntities.map(entity => (
         <Marker
           key={entity.id}

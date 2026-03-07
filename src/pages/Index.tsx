@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Radar, Radio, ChevronLeft, ChevronRight, RefreshCw, Wifi, WifiOff } from 'lucide-react';
+import { Radar, Radio, ChevronLeft, ChevronRight, RefreshCw, Wifi, WifiOff, Route } from 'lucide-react';
 import OSINTMap from '@/components/OSINTMap';
 import LayerControl from '@/components/LayerControl';
 import AlertsPanel from '@/components/AlertsPanel';
@@ -11,7 +11,7 @@ import { useOSINTData } from '@/hooks/useOSINTData';
 import { EntityType, MapEntity } from '@/data/mockData';
 
 export default function Index() {
-  const { entities, alerts, activity, stats, lastUpdate, isLive, setIsLive, refresh } = useOSINTData(5000);
+  const { entities, alerts, activity, stats, lastUpdate, isLive, setIsLive, refresh, trails, showTrails, setShowTrails } = useOSINTData(5000);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [selectedEntity, setSelectedEntity] = useState<MapEntity | null>(null);
   const [visibleLayers, setVisibleLayers] = useState<Record<EntityType, boolean>>({
@@ -56,6 +56,15 @@ export default function Index() {
             {isLive ? 'LIVE' : 'PAUSED'}
           </button>
           <button
+            onClick={() => setShowTrails(!showTrails)}
+            className={`flex items-center gap-1.5 px-2 py-1 rounded text-[10px] font-mono transition-all ${
+              showTrails ? 'bg-accent/10 text-accent border border-accent/30' : 'bg-secondary text-muted-foreground border border-border'
+            }`}
+          >
+            <Route className="w-3 h-3" />
+            TRAILS
+          </button>
+          <button
             onClick={refresh}
             className="flex items-center gap-1.5 px-2 py-1 rounded text-[10px] font-mono text-muted-foreground hover:text-foreground bg-secondary border border-border transition-all"
           >
@@ -83,6 +92,8 @@ export default function Index() {
             visibleLayers={visibleLayers}
             onEntitySelect={setSelectedEntity}
             selectedEntity={selectedEntity}
+            trails={trails}
+            showTrails={showTrails}
           />
           {/* Scanline overlay */}
           <div className="absolute inset-0 scanline pointer-events-none z-[400]" />
