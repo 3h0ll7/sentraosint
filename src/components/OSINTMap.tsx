@@ -2,9 +2,12 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { MapEntity, EntityType } from '@/data/mockData';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import TrailLayer from '@/components/TrailLayer';
+import LinkLayer from '@/components/LinkLayer';
 import { TrailHistory } from '@/hooks/useOSINTData';
+import { getThreatColor, LinkConnection } from '@/data/threatEngine';
+import MapStyleSelector, { MapStyle, getTileUrls } from '@/components/MapStyleSelector';
 
 interface OSINTMapProps {
   entities: MapEntity[];
@@ -13,15 +16,9 @@ interface OSINTMapProps {
   selectedEntity?: MapEntity | null;
   trails: TrailHistory;
   showTrails: boolean;
+  links: LinkConnection[];
+  showLinks: boolean;
 }
-
-const ICON_COLORS: Record<EntityType, string> = {
-  aircraft: '#00cc80',
-  ship: '#3b9be8',
-  base: '#f59e0b',
-  strategic: '#a855f7',
-  alert: '#ef4444',
-};
 
 const ICON_SYMBOLS: Record<EntityType, string> = {
   aircraft: '✈',
@@ -31,14 +28,35 @@ const ICON_SYMBOLS: Record<EntityType, string> = {
   alert: '⚠',
 };
 
+const ICON_COLORS_DEFAULT: Record<EntityType, string> = {
+  aircraft: '#00cc80',
+  ship: '#3b9be8',
+  base: '#f59e0b',
+  strategic: '#a855f7',
+  alert: '#ef4444',
+};
+
 function createIcon(entity: MapEntity): L.DivIcon {
-  const color = ICON_COLORS[entity.type];
+  const threatScore = entity.threatScore ?? 0;
+  const hasThreat = (entity.type === 'aircraft' || entity.type === 'ship') && threatScore > 0;
+  const color = hasThreat ? getThreatColor(threatScore) : ICON_COLORS_DEFAULT[entity.type];
   const symbol = ICON_SYMBOLS[entity.type];
   const isMilitary = entity.classification === 'military';
   const isUnknown = entity.classification === 'unknown';
-  const pulseColor = isUnknown ? '#ef4444' : color;
   const rotation = entity.heading || 0;
   const size = entity.type === 'base' || entity.type === 'strategic' ? 28 : 22;
+
+  // Multi-ring radar pulse for military/unknown
+  const pulseRings = (isUnknown || isMilitary) ? `
+    <div style="position:absolute;inset:-6px;border-radius:50%;border:1px solid ${color};opacity:0.6;animation:radar-pulse 2.5s ease-out infinite;"></div>
+    <div style="position:absolute;inset:-4px;border-radius:50%;border:0.5px solid ${color};opacity:0.3;animation:radar-pulse 2.5s ease-out 0.8s infinite;"></div>
+    ${threatScore >= 60 ? `<div style="position:absolute;inset:-8px;border-radius:50%;border:1px solid ${color};opacity:0.2;animation:radar-pulse 2.5s ease-out 1.6s infinite;"></div>` : ''}
+  ` : '';
+
+  // Threat indicator ring
+  const threatRing = hasThreat && threatScore >= 30 ? `
+    <div style="position:absolute;inset:-2px;border-radius:50%;border:2px solid ${color};opacity:${Math.min(1, threatScore / 100)};"></div>
+  ` : '';
 
   return L.divIcon({
     className: 'custom-marker',
@@ -47,7 +65,8 @@ function createIcon(entity: MapEntity): L.DivIcon {
     popupAnchor: [0, -size / 2],
     html: `
       <div style="position:relative;width:${size}px;height:${size}px;display:flex;align-items:center;justify-content:center;">
-        ${isUnknown || isMilitary ? `<div style="position:absolute;inset:-4px;border-radius:50%;border:1px solid ${pulseColor};opacity:0.5;animation:radar-pulse 3s ease-out infinite;"></div>` : ''}
+        ${pulseRings}
+        ${threatRing}
         <div style="
           width:${size}px;height:${size}px;
           border-radius:${entity.type === 'base' ? '4px' : '50%'};
@@ -56,9 +75,9 @@ function createIcon(entity: MapEntity): L.DivIcon {
           display:flex;align-items:center;justify-content:center;
           font-size:${size * 0.5}px;
           transform:rotate(${entity.type === 'aircraft' ? rotation : 0}deg);
-          box-shadow:0 0 8px ${color}66;
+          box-shadow:0 0 12px ${color}55, 0 0 4px ${color}33;
           cursor:pointer;
-          transition:transform 0.3s ease;
+          transition:all 0.3s ease;
         ">${symbol}</div>
       </div>
     `,
@@ -69,13 +88,35 @@ function FlyToEntity({ entity }: { entity: MapEntity | null }) {
   const map = useMap();
   useEffect(() => {
     if (entity) {
-      map.flyTo([entity.lat, entity.lng], 8, { duration: 1 });
+      map.flyTo([entity.lat, entity.lng], 8, { duration: 1.2 });
     }
   }, [entity, map]);
   return null;
 }
 
-export default function OSINTMap({ entities, visibleLayers, onEntitySelect, selectedEntity, trails, showTrails }: OSINTMapProps) {
+function MapTiles({ style }: { style: MapStyle }) {
+  const urls = getTileUrls(style);
+  return (
+    <>
+      <TileLayer
+        key={`base-${style}`}
+        url={urls.base}
+        attribution='&copy; CARTO / Esri'
+      />
+      {urls.labels && (
+        <TileLayer
+          key={`labels-${style}`}
+          url={urls.labels}
+          attribution=""
+        />
+      )}
+    </>
+  );
+}
+
+export default function OSINTMap({ entities, visibleLayers, onEntitySelect, selectedEntity, trails, showTrails, links, showLinks }: OSINTMapProps) {
+  const [mapStyle, setMapStyle] = useState<MapStyle>('dark');
+
   const filteredEntities = useMemo(
     () => entities.filter(e => visibleLayers[e.type]),
     [entities, visibleLayers]
@@ -88,49 +129,59 @@ export default function OSINTMap({ entities, visibleLayers, onEntitySelect, sele
   }, [entities]);
 
   return (
-    <MapContainer
-      center={[25.5, 50.0]}
-      zoom={5}
-      className="w-full h-full"
-      zoomControl={true}
-      attributionControl={true}
-    >
-      <TileLayer
-        url="https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png"
-        attribution='&copy; <a href="https://carto.com/">CARTO</a>'
-      />
-      <TileLayer
-        url="https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png"
-        attribution=""
-      />
-      <FlyToEntity entity={selectedEntity ?? null} />
-      <TrailLayer trails={trails} visible={showTrails} entityTypes={entityTypes} />
-      {filteredEntities.map(entity => (
-        <Marker
-          key={entity.id}
-          position={[entity.lat, entity.lng]}
-          icon={createIcon(entity)}
-          eventHandlers={{
-            click: () => onEntitySelect?.(entity),
-          }}
-        >
-          <Popup className="osint-popup">
-            <div style={{ background: '#111827', color: '#e5e7eb', padding: '8px 12px', borderRadius: '6px', minWidth: '220px', fontFamily: 'JetBrains Mono, monospace', fontSize: '11px', border: `1px solid ${ICON_COLORS[entity.type]}44` }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
-                <span style={{ color: ICON_COLORS[entity.type], fontSize: '14px' }}>{ICON_SYMBOLS[entity.type]}</span>
-                <strong style={{ color: ICON_COLORS[entity.type] }}>{entity.name}</strong>
+    <div className="relative w-full h-full">
+      <MapContainer
+        center={[25.5, 50.0]}
+        zoom={5}
+        className="w-full h-full"
+        zoomControl={true}
+        attributionControl={true}
+      >
+        <MapTiles style={mapStyle} />
+        <FlyToEntity entity={selectedEntity ?? null} />
+        <TrailLayer trails={trails} visible={showTrails} entityTypes={entityTypes} />
+        <LinkLayer links={links} visible={showLinks} />
+        {filteredEntities.map(entity => (
+          <Marker
+            key={entity.id}
+            position={[entity.lat, entity.lng]}
+            icon={createIcon(entity)}
+            eventHandlers={{
+              click: () => onEntitySelect?.(entity),
+            }}
+          >
+            <Popup className="osint-popup">
+              <div style={{
+                background: '#0a0f1a', color: '#e5e7eb', padding: '10px 14px', borderRadius: '8px',
+                minWidth: '240px', fontFamily: 'JetBrains Mono, monospace', fontSize: '11px',
+                border: `1px solid ${(entity.threatScore ?? 0) > 30 ? getThreatColor(entity.threatScore ?? 0) : ICON_COLORS_DEFAULT[entity.type]}44`,
+                boxShadow: `0 0 20px ${ICON_COLORS_DEFAULT[entity.type]}11`,
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+                  <span style={{ fontSize: '14px' }}>{ICON_SYMBOLS[entity.type]}</span>
+                  <strong style={{ color: ICON_COLORS_DEFAULT[entity.type] }}>{entity.name}</strong>
+                </div>
+                {entity.callsign && <div><span style={{ color: '#6b7280' }}>CALLSIGN:</span> {entity.callsign}</div>}
+                <div><span style={{ color: '#6b7280' }}>CLASS:</span> <span style={{ color: entity.classification === 'military' ? '#f59e0b' : entity.classification === 'unknown' ? '#ef4444' : '#6b7280' }}>{entity.classification.toUpperCase()}</span></div>
+                {entity.altitude && <div><span style={{ color: '#6b7280' }}>ALT:</span> {entity.altitude.toLocaleString()} ft</div>}
+                {entity.speed && <div><span style={{ color: '#6b7280' }}>SPD:</span> {entity.speed} kts</div>}
+                {entity.heading !== undefined && <div><span style={{ color: '#6b7280' }}>HDG:</span> {Math.round(entity.heading)}°</div>}
+                {entity.threatScore !== undefined && entity.threatScore > 0 && (
+                  <div style={{ marginTop: '6px', padding: '4px 0', borderTop: '1px solid #1f2937' }}>
+                    <span style={{ color: '#6b7280' }}>THREAT:</span>{' '}
+                    <span style={{ color: getThreatColor(entity.threatScore), fontWeight: 'bold' }}>
+                      {entity.threatScore}/100
+                    </span>
+                  </div>
+                )}
+                <div style={{ marginTop: '4px', color: '#9ca3af', fontSize: '10px' }}>{entity.details}</div>
+                <div style={{ marginTop: '4px', color: '#6b7280', fontSize: '9px' }}>SRC: {entity.source}</div>
               </div>
-              {entity.callsign && <div><span style={{ color: '#6b7280' }}>CALLSIGN:</span> {entity.callsign}</div>}
-              <div><span style={{ color: '#6b7280' }}>CLASS:</span> <span style={{ color: entity.classification === 'military' ? '#f59e0b' : entity.classification === 'unknown' ? '#ef4444' : '#6b7280' }}>{entity.classification.toUpperCase()}</span></div>
-              {entity.altitude && <div><span style={{ color: '#6b7280' }}>ALT:</span> {entity.altitude.toLocaleString()} ft</div>}
-              {entity.speed && <div><span style={{ color: '#6b7280' }}>SPD:</span> {entity.speed} kts</div>}
-              {entity.heading !== undefined && <div><span style={{ color: '#6b7280' }}>HDG:</span> {Math.round(entity.heading)}°</div>}
-              <div style={{ marginTop: '4px', color: '#9ca3af', fontSize: '10px' }}>{entity.details}</div>
-              <div style={{ marginTop: '4px', color: '#6b7280', fontSize: '9px' }}>SRC: {entity.source}</div>
-            </div>
-          </Popup>
-        </Marker>
-      ))}
-    </MapContainer>
+            </Popup>
+          </Marker>
+        ))}
+      </MapContainer>
+      <MapStyleSelector currentStyle={mapStyle} onStyleChange={setMapStyle} />
+    </div>
   );
 }
