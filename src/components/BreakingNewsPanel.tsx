@@ -1,8 +1,9 @@
 import { useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { Swords, TrendingDown, Ship, HeartPulse, Landmark, ExternalLink, ShieldAlert, AlertTriangle, Info } from 'lucide-react';
+import { Swords, TrendingDown, Ship, HeartPulse, Landmark, ExternalLink, ShieldAlert, AlertTriangle, Info, FileDown, FileText } from 'lucide-react';
 import { GlobalEvent, EventCategory } from '@/hooks/useGlobalEvents';
 import { getTopIntelEvents, ScoredEvent } from '@/data/eventPriorityEngine';
+import { exportIntelCSV, exportIntelPDF } from '@/utils/exportIntelReport';
 
 interface BreakingNewsPanelProps {
   events: GlobalEvent[];
@@ -34,7 +35,28 @@ export default function BreakingNewsPanel({ events }: BreakingNewsPanelProps) {
   }
 
   return (
-    <div className="flex flex-col gap-1.5 max-h-[350px] overflow-y-auto">
+    <div className="flex flex-col gap-1.5">
+      {/* Export buttons */}
+      <div className="flex items-center gap-1.5 mb-1">
+        <span className="text-[8px] font-mono text-muted-foreground mr-auto">{scoredEvents.length} events ranked</span>
+        <button
+          onClick={() => exportIntelCSV(scoredEvents)}
+          className="flex items-center gap-1 px-2 py-1 rounded text-[8px] font-mono text-muted-foreground hover:text-foreground bg-secondary/50 border border-border/50 hover:bg-secondary transition-colors"
+          title="Export CSV"
+        >
+          <FileDown className="w-2.5 h-2.5" />
+          CSV
+        </button>
+        <button
+          onClick={() => exportIntelPDF(scoredEvents)}
+          className="flex items-center gap-1 px-2 py-1 rounded text-[8px] font-mono text-muted-foreground hover:text-foreground bg-secondary/50 border border-border/50 hover:bg-secondary transition-colors"
+          title="Export PDF"
+        >
+          <FileText className="w-2.5 h-2.5" />
+          PDF
+        </button>
+      </div>
+      <div className="max-h-[320px] overflow-y-auto flex flex-col gap-1.5">
       {scoredEvents.map((event, i) => {
         const catConfig = CATEGORY_CONFIG[event.category as Exclude<EventCategory, 'disaster'>];
         if (!catConfig) return null;
@@ -100,6 +122,7 @@ export default function BreakingNewsPanel({ events }: BreakingNewsPanelProps) {
           </motion.div>
         );
       })}
+      </div>
     </div>
   );
 }
