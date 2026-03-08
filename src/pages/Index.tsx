@@ -248,6 +248,17 @@ export default function Index() {
                   onEntitySelect={setSelectedEntity}
                 />
 
+                <TelemetrySection title="LIVE OSINT FEEDS">
+                  <LiveFeedsPanel
+                    feedStatus={feedStatus}
+                    onFetchOpenSky={fetchOpenSky}
+                    onFetchEarthquakes={fetchEarthquakes}
+                    onFetchFIRMS={fetchFIRMS}
+                    onFetchGDACS={fetchGDACS}
+                    onFetchAll={fetchAll}
+                  />
+                </TelemetrySection>
+
                 <TelemetrySection title="ENTITY TRACKING">
                   <LayerControl visibleLayers={visibleLayers} onToggle={toggleLayer} counts={layerCounts} />
                 </TelemetrySection>
