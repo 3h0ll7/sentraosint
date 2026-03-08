@@ -2,6 +2,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { MapEntity, EntityType } from '@/data/mockData';
+import { InterpolatedEntity } from '@/hooks/useEntityInterpolation';
 import { useEffect, useMemo, useState } from 'react';
 import TrailLayer from '@/components/TrailLayer';
 import LinkLayer from '@/components/LinkLayer';
