@@ -108,9 +108,24 @@ export function useOSINTFeeds() {
     }
   }, []);
 
+  const fetchGoogleNews = useCallback(async () => {
+    updateFeed('googleNews', { loading: true });
+    try {
+      const { data, error } = await supabase.functions.invoke('fetch-google-news');
+      if (error) throw error;
+      updateFeed('googleNews', { loading: false, lastFetch: new Date(), count: data.news || 0 });
+      toast.success(`Google News: ${data.news} intel events classified`);
+      return data;
+    } catch (e: any) {
+      updateFeed('googleNews', { loading: false });
+      toast.error(`Google News fetch failed: ${e.message}`);
+      console.error('Google News error:', e);
+    }
+  }, []);
+
   const fetchAll = useCallback(async () => {
-    await Promise.allSettled([fetchOpenSky(), fetchEarthquakes(), fetchFIRMS(), fetchGDACS(), fetchOSINTNews()]);
-  }, [fetchOpenSky, fetchEarthquakes, fetchFIRMS, fetchGDACS, fetchOSINTNews]);
+    await Promise.allSettled([fetchOpenSky(), fetchEarthquakes(), fetchFIRMS(), fetchGDACS(), fetchOSINTNews(), fetchGoogleNews()]);
+  }, [fetchOpenSky, fetchEarthquakes, fetchFIRMS, fetchGDACS, fetchOSINTNews, fetchGoogleNews]);
 
   // Auto-fetch all feeds on mount
   const hasFetched = useRef(false);
@@ -128,13 +143,14 @@ export function useOSINTFeeds() {
     return () => clearInterval(interval);
   }, [fetchFIRMS]);
 
-  // Auto-refresh OSINT news every 5 minutes
+  // Auto-refresh news every 5 minutes
   useEffect(() => {
     const interval = setInterval(() => {
       fetchOSINTNews();
+      fetchGoogleNews();
     }, 300000);
     return () => clearInterval(interval);
-  }, [fetchOSINTNews]);
+  }, [fetchOSINTNews, fetchGoogleNews]);
 
   return {
     feedStatus,
@@ -143,6 +159,7 @@ export function useOSINTFeeds() {
     fetchFIRMS,
     fetchGDACS,
     fetchOSINTNews,
+    fetchGoogleNews,
     fetchAll,
   };
 }
