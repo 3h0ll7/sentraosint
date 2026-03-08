@@ -1,7 +1,7 @@
 import { useState, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Radar, Radio, ChevronLeft, ChevronRight, RefreshCw, Wifi, WifiOff, Route, Link2, Grid3x3, Globe, Thermometer, Crosshair, Brain, Waves } from 'lucide-react';
-import MatrixRain from '@/components/MatrixRain';
+import { Radar, Radio, ChevronLeft, ChevronRight, RefreshCw, Wifi, WifiOff, Route, Link2, Grid3x3, Globe, Thermometer, Crosshair, Waves } from 'lucide-react';
+import MissionControlBg from '@/components/MissionControlBg';
 import OSINTMap from '@/components/OSINTMap';
 import LayerControl from '@/components/LayerControl';
 import EventLayerControl from '@/components/EventLayerControl';
@@ -57,11 +57,7 @@ export default function Index() {
   const [showImpactWaves, setShowImpactWaves] = useState(true);
   const [flyToTarget, setFlyToTarget] = useState<{ lat: number; lng: number } | null>(null);
   const [visibleLayers, setVisibleLayers] = useState<Record<EntityType, boolean>>({
-    aircraft: true,
-    ship: true,
-    base: true,
-    strategic: true,
-    alert: true,
+    aircraft: true, ship: true, base: true, strategic: true, alert: true,
   });
 
   const layerCounts = useMemo(() => {
@@ -90,80 +86,96 @@ export default function Index() {
   const focusHottestRegion = useCallback(() => {
     if (hottestRegion) {
       setFlyToTarget({ lat: hottestRegion.lat, lng: hottestRegion.lng });
-      // Reset after animation
       setTimeout(() => setFlyToTarget(null), 3000);
     }
   }, [hottestRegion]);
 
+  const uptime = useMemo(() => {
+    const mins = Math.floor((Date.now() % 86400000) / 60000);
+    const h = Math.floor(mins / 60);
+    const m = mins % 60;
+    return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+  }, [lastUpdate]);
+
   return (
     <div className="h-screen w-screen flex flex-col overflow-hidden bg-background relative">
-      <MatrixRain />
+      <MissionControlBg />
       <GlobalAlertBanner alert={breakingAlert} onDismiss={dismissBreaking} />
 
-      {/* Header */}
-      <header className="flex items-center justify-between px-4 py-2 bg-card/90 backdrop-blur-sm border-b border-border flex-shrink-0 relative z-10 matrix-border">
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2">
-            <Radar className="w-5 h-5 text-primary animate-glow-pulse" />
-            <h1 className="text-sm font-bold font-mono tracking-[0.2em] text-primary matrix-glow">OSINT OVERWATCH</h1>
+      {/* Mission Control Header */}
+      <header className="flex items-center justify-between px-5 py-2.5 bg-card/95 backdrop-blur-md border-b border-border flex-shrink-0 relative z-10 mc-border">
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2.5">
+            <div className="relative">
+              <Radar className="w-5 h-5 text-primary animate-glow-pulse" />
+              <div className="absolute inset-0 w-5 h-5 rounded-full bg-primary/10 animate-status-pulse" />
+            </div>
+            <div>
+              <h1 className="text-xs font-display font-bold tracking-[0.25em] text-primary mc-glow leading-none">
+                GLOBAL MONITORING SYSTEM
+              </h1>
+              <div className="flex items-center gap-3 mt-0.5">
+                <span className="text-[8px] font-mono text-muted-foreground tracking-wider">MISSION CONTROL</span>
+                <span className="text-[8px] font-mono text-muted-foreground">UPTIME {uptime}</span>
+              </div>
+            </div>
           </div>
+          <div className="w-px h-8 bg-border" />
           <StabilityIndicator stability={stability} />
         </div>
+
         <div className="flex items-center gap-1.5">
-          <HeaderBtn active={isLive} onClick={() => setIsLive(!isLive)}
+          <OpsBtn active={isLive} onClick={() => setIsLive(!isLive)}
             icon={isLive ? <Wifi className="w-3 h-3" /> : <WifiOff className="w-3 h-3" />}
-            label={isLive ? 'LIVE' : 'PAUSED'} activeClass="bg-primary/10 text-primary border-primary/30"
+            label={isLive ? 'LIVE' : 'HOLD'} color="primary"
           />
-          <HeaderBtn active={showTrails} onClick={() => setShowTrails(!showTrails)}
-            icon={<Route className="w-3 h-3" />} label="TRAILS"
-            activeClass="bg-accent/10 text-accent border-accent/30"
+          <OpsBtn active={showTrails} onClick={() => setShowTrails(!showTrails)}
+            icon={<Route className="w-3 h-3" />} label="TRK" color="accent"
           />
-          <HeaderBtn active={showLinks} onClick={() => setShowLinks(!showLinks)}
-            icon={<Link2 className="w-3 h-3" />} label="LINKS"
-            activeClass="bg-strategic/10 text-strategic border-strategic/30"
+          <OpsBtn active={showLinks} onClick={() => setShowLinks(!showLinks)}
+            icon={<Link2 className="w-3 h-3" />} label="LNK" color="strategic"
           />
-          <HeaderBtn active={showGlobalEvents} onClick={() => setShowGlobalEvents(!showGlobalEvents)}
-            icon={<Globe className="w-3 h-3" />} label="EVENTS"
-            activeClass="bg-accent/10 text-accent border-accent/30"
+          <OpsBtn active={showGlobalEvents} onClick={() => setShowGlobalEvents(!showGlobalEvents)}
+            icon={<Globe className="w-3 h-3" />} label="EVT" color="accent"
           />
-          <HeaderBtn active={showImpactWaves} onClick={() => setShowImpactWaves(!showImpactWaves)}
-            icon={<Waves className="w-3 h-3" />} label="WAVES"
-            activeClass="bg-destructive/10 text-destructive border-destructive/30"
+          <OpsBtn active={showImpactWaves} onClick={() => setShowImpactWaves(!showImpactWaves)}
+            icon={<Waves className="w-3 h-3" />} label="WAV" color="destructive"
           />
-          <HeaderBtn active={showRiskHeatmap} onClick={() => setShowRiskHeatmap(!showRiskHeatmap)}
-            icon={<Thermometer className="w-3 h-3" />} label="RISK"
-            activeClass="bg-alert/10 text-alert border-alert/30"
+          <OpsBtn active={showRiskHeatmap} onClick={() => setShowRiskHeatmap(!showRiskHeatmap)}
+            icon={<Thermometer className="w-3 h-3" />} label="RSK" color="alert"
           />
-          <HeaderBtn active={showGrid} onClick={() => setShowGrid(!showGrid)}
-            icon={<Grid3x3 className="w-3 h-3" />} label="GRID"
-            activeClass="bg-muted-foreground/10 text-muted-foreground border-muted-foreground/30"
+          <OpsBtn active={showGrid} onClick={() => setShowGrid(!showGrid)}
+            icon={<Grid3x3 className="w-3 h-3" />} label="GRD" color="muted-foreground"
           />
+
+          <div className="w-px h-5 bg-border mx-1" />
+
           <button
             onClick={focusHottestRegion}
-            className="flex items-center gap-1.5 px-2 py-1 rounded text-[10px] font-mono text-alert bg-alert/10 border border-alert/30 hover:bg-alert/20 transition-all"
-            title="Focus on hottest region"
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded text-[9px] font-display font-bold tracking-wider text-alert bg-alert/10 border border-alert/25 hover:bg-alert/20 transition-all"
           >
             <Crosshair className="w-3 h-3" />
             HOTSPOT
           </button>
           <button
             onClick={refresh}
-            className="flex items-center gap-1.5 px-2 py-1 rounded text-[10px] font-mono text-muted-foreground hover:text-foreground bg-secondary border border-border transition-all"
+            className="flex items-center gap-1 px-2 py-1 rounded text-[10px] font-mono text-muted-foreground hover:text-foreground bg-secondary border border-border transition-all"
           >
             <RefreshCw className="w-3 h-3" />
           </button>
-          <div className="flex items-center gap-1.5">
-            <Radio className={`w-3 h-3 ${isLive ? 'text-primary blink' : 'text-muted-foreground'}`} />
-            <span className="text-[9px] font-mono text-muted-foreground">
+          <div className="flex items-center gap-1.5 ml-1">
+            <div className={`w-2 h-2 rounded-full ${isLive ? 'bg-accent animate-status-pulse' : 'bg-muted-foreground'}`} />
+            <span className="text-[9px] font-mono text-muted-foreground tabular-nums">
               {lastUpdate.toLocaleTimeString()}
             </span>
           </div>
         </div>
       </header>
 
+      {/* Telemetry Bar */}
       <StatsBar stats={stats} globalEventCount={allEvents.length} />
 
-      {/* Main Content */}
+      {/* Main Operations Display */}
       <div className="flex flex-1 overflow-hidden relative">
         <div className="flex-1 relative">
           <OSINTMap
@@ -182,7 +194,7 @@ export default function Index() {
             showImpactWaves={showImpactWaves}
             flyToTarget={flyToTarget}
           />
-          {showGrid && <div className="absolute inset-0 grid-bg pointer-events-none z-[400] opacity-30" />}
+          {showGrid && <div className="absolute inset-0 grid-bg pointer-events-none z-[400] opacity-40" />}
           <div className="absolute inset-0 scanline pointer-events-none z-[401]" />
 
           <AnimatePresence>
@@ -206,8 +218,8 @@ export default function Index() {
         {/* Sidebar Toggle */}
         <button
           onClick={() => setSidebarOpen(!sidebarOpen)}
-          className="absolute right-0 top-1/2 -translate-y-1/2 z-[500] bg-card border border-border rounded-l-md p-1 text-muted-foreground hover:text-foreground transition-colors"
-          style={{ right: sidebarOpen ? '320px' : '0' }}
+          className="absolute right-0 top-1/2 -translate-y-1/2 z-[500] bg-card border border-border rounded-l-md p-1.5 text-muted-foreground hover:text-primary transition-colors"
+          style={{ right: sidebarOpen ? '340px' : '0' }}
         >
           {sidebarOpen ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
         </button>
@@ -217,12 +229,12 @@ export default function Index() {
           {sidebarOpen && (
             <motion.aside
               initial={{ width: 0, opacity: 0 }}
-              animate={{ width: 320, opacity: 1 }}
+              animate={{ width: 340, opacity: 1 }}
               exit={{ width: 0, opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="h-full border-l border-border bg-card overflow-hidden flex-shrink-0"
+              transition={{ duration: 0.25 }}
+              className="h-full border-l border-border bg-card/95 backdrop-blur-sm overflow-hidden flex-shrink-0"
             >
-              <div className="w-[320px] h-full overflow-y-auto p-3 space-y-4">
+              <div className="w-[340px] h-full overflow-y-auto p-3 space-y-3">
                 <SearchBar
                   entities={entities}
                   globalEvents={allEvents}
@@ -230,54 +242,54 @@ export default function Index() {
                   onEntitySelect={setSelectedEntity}
                 />
 
-                <Section title="ENTITY LAYERS">
+                <TelemetrySection title="ENTITY TRACKING">
                   <LayerControl visibleLayers={visibleLayers} onToggle={toggleLayer} counts={layerCounts} />
-                </Section>
+                </TelemetrySection>
 
-                <Section title="GLOBAL EVENT LAYERS" badge={allEvents.length}>
+                <TelemetrySection title="EVENT TELEMETRY" badge={allEvents.length}>
                   <EventLayerControl visibleCategories={visibleCategories} onToggle={toggleCategory} counts={eventCategoryCounts} />
-                </Section>
+                </TelemetrySection>
 
                 {showRiskHeatmap && (
-                  <Section title="RISK HEATMAP" badge={riskPoints.filter(p => p.score >= 60).length}>
+                  <TelemetrySection title="RISK ASSESSMENT" badge={riskPoints.filter(p => p.score >= 60).length}>
                     <RiskLegend riskPoints={riskPoints} />
-                  </Section>
+                  </TelemetrySection>
                 )}
 
-                <Section title="🌍 GLOBAL CONCERNS">
+                <TelemetrySection title="GLOBAL CONCERNS">
                   <GlobalConcernsPanel concerns={concerns} />
-                </Section>
+                </TelemetrySection>
 
                 {(correlations.length > 0 || patterns.length > 0) && (
-                  <Section title="🧠 AI INSIGHTS" badge={correlations.length + patterns.length}>
+                  <TelemetrySection title="AI ANALYSIS" badge={correlations.length + patterns.length}>
                     <IntelligenceInsightsPanel correlations={correlations} patterns={patterns} />
-                  </Section>
+                  </TelemetrySection>
                 )}
 
-                <Section title="BREAKING NEWS" badge={allEvents.filter(e => e.is_breaking).length}>
+                <TelemetrySection title="BREAKING INTEL" badge={allEvents.filter(e => e.is_breaking).length}>
                   <BreakingNewsPanel events={globalEvents} />
-                </Section>
+                </TelemetrySection>
 
-                <Section title="THREAT ALERTS" badge={alerts.filter(a => a.severity === 'critical').length}>
+                <TelemetrySection title="MISSION ALERTS" badge={alerts.filter(a => a.severity === 'critical').length}>
                   <AlertsPanel alerts={alerts} />
-                </Section>
+                </TelemetrySection>
 
-                <Section title="ACTIVITY FEED">
+                <TelemetrySection title="ACTIVITY LOG">
                   <ActivityFeed events={activity} />
-                </Section>
+                </TelemetrySection>
 
                 {links.length > 0 && (
-                  <Section title="LINK ANALYSIS" badge={links.length}>
+                  <TelemetrySection title="LINK ANALYSIS" badge={links.length}>
                     <div className="space-y-1">
                       {links.slice(0, 6).map(link => (
-                        <div key={link.id} className="flex items-center gap-2 px-2 py-1.5 rounded bg-secondary/30 text-[9px] font-mono">
-                          <Link2 className="w-2.5 h-2.5 text-strategic flex-shrink-0" />
-                          <span className="text-strategic">{link.reason}</span>
-                          <span className="text-muted-foreground ml-auto">{Math.round(link.distance)}km</span>
+                        <div key={link.id} className="flex items-center gap-2 px-2 py-1.5 rounded bg-secondary/50 text-[9px] font-mono">
+                          <Link2 className="w-2.5 h-2.5 text-primary flex-shrink-0" />
+                          <span className="text-foreground">{link.reason}</span>
+                          <span className="text-muted-foreground ml-auto tabular-nums">{Math.round(link.distance)}km</span>
                         </div>
                       ))}
                     </div>
-                  </Section>
+                  </TelemetrySection>
                 )}
               </div>
             </motion.aside>
@@ -288,14 +300,25 @@ export default function Index() {
   );
 }
 
-function HeaderBtn({ active, onClick, icon, label, activeClass }: {
-  active: boolean; onClick: () => void; icon: React.ReactNode; label: string; activeClass: string;
+const OPS_COLOR_MAP: Record<string, string> = {
+  primary: 'bg-primary/10 text-primary border-primary/25',
+  accent: 'bg-accent/10 text-accent border-accent/25',
+  strategic: 'bg-strategic/10 text-strategic border-strategic/25',
+  destructive: 'bg-destructive/10 text-destructive border-destructive/25',
+  alert: 'bg-alert/10 text-alert border-alert/25',
+  'muted-foreground': 'bg-muted/20 text-muted-foreground border-muted-foreground/25',
+};
+
+function OpsBtn({ active, onClick, icon, label, color }: {
+  active: boolean; onClick: () => void; icon: React.ReactNode; label: string; color: string;
 }) {
   return (
     <button
       onClick={onClick}
-      className={`flex items-center gap-1.5 px-2 py-1 rounded text-[10px] font-mono transition-all border ${
-        active ? activeClass : 'bg-secondary text-muted-foreground border-border'
+      className={`flex items-center gap-1 px-2 py-1 rounded text-[9px] font-display font-bold tracking-wider transition-all border ${
+        active
+          ? OPS_COLOR_MAP[color] || 'bg-primary/10 text-primary border-primary/25'
+          : 'bg-secondary text-muted-foreground border-border'
       }`}
     >
       {icon}
@@ -304,13 +327,14 @@ function HeaderBtn({ active, onClick, icon, label, activeClass }: {
   );
 }
 
-function Section({ title, badge, children }: { title: string; badge?: number; children: React.ReactNode }) {
+function TelemetrySection({ title, badge, children }: { title: string; badge?: number; children: React.ReactNode }) {
   return (
-    <div>
-      <div className="flex items-center gap-2 mb-2">
-        <h2 className="text-[10px] font-mono font-bold text-muted-foreground tracking-widest">{title}</h2>
+    <div className="telemetry-panel rounded-md p-3">
+      <div className="flex items-center gap-2 mb-2.5">
+        <div className="w-1.5 h-1.5 rounded-full bg-primary animate-status-pulse" />
+        <h2 className="text-[9px] font-display font-bold text-primary/80 tracking-[0.2em]">{title}</h2>
         {badge !== undefined && badge > 0 && (
-          <span className="text-[9px] font-mono font-bold bg-alert/20 text-alert px-1.5 py-0.5 rounded blink">
+          <span className="text-[9px] font-display font-bold bg-alert/15 text-alert px-1.5 py-0.5 rounded blink ml-auto tabular-nums">
             {badge}
           </span>
         )}

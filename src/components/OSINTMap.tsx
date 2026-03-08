@@ -40,11 +40,11 @@ const ICON_SYMBOLS: Record<EntityType, string> = {
 };
 
 const ICON_COLORS_DEFAULT: Record<EntityType, string> = {
-  aircraft: '#00ff41',
-  ship: '#00cc33',
-  base: '#ffaa00',
-  strategic: '#00aa2a',
-  alert: '#ff3333',
+  aircraft: '#29D3FF',
+  ship: '#2DFF9C',
+  base: '#FFB547',
+  strategic: '#5B8DEF',
+  alert: '#FF4040',
 };
 
 function createIcon(entity: MapEntity): L.DivIcon {
@@ -169,28 +169,29 @@ export default function OSINTMap({
           >
             <Popup className="osint-popup">
               <div style={{
-                background: '#000800', color: '#00ff41', padding: '10px 14px', borderRadius: '4px',
-                minWidth: '240px', fontFamily: "'Share Tech Mono', monospace", fontSize: '11px',
-                border: `1px solid rgba(0,255,65,0.3)`,
-                boxShadow: `0 0 20px rgba(0,255,65,0.1), inset 0 0 30px rgba(0,255,65,0.02)`,
+                background: '#0B1220', color: '#c5d0de', padding: '12px 16px', borderRadius: '6px',
+                minWidth: '240px', fontFamily: "'IBM Plex Mono', monospace", fontSize: '11px',
+                border: '1px solid rgba(41,211,255,0.25)',
+                borderTop: '2px solid rgba(41,211,255,0.5)',
+                boxShadow: '0 4px 24px rgba(0,0,0,0.5), 0 0 12px rgba(41,211,255,0.08)',
               }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
                   <span style={{ fontSize: '14px' }}>{ICON_SYMBOLS[entity.type]}</span>
-                  <strong style={{ color: '#00ff41', textShadow: '0 0 6px rgba(0,255,65,0.5)' }}>{entity.name}</strong>
+                  <strong style={{ color: '#29D3FF', fontFamily: "'Orbitron', sans-serif", fontSize: '10px', letterSpacing: '1px' }}>{entity.name}</strong>
                 </div>
-                {entity.callsign && <div><span style={{ color: '#006617' }}>CALLSIGN:</span> {entity.callsign}</div>}
-                <div><span style={{ color: '#006617' }}>CLASS:</span> <span style={{ color: entity.classification === 'military' ? '#ffaa00' : entity.classification === 'unknown' ? '#ff3333' : '#006617' }}>{entity.classification.toUpperCase()}</span></div>
-                {entity.altitude && <div><span style={{ color: '#006617' }}>ALT:</span> {entity.altitude.toLocaleString()} ft</div>}
-                {entity.speed && <div><span style={{ color: '#006617' }}>SPD:</span> {entity.speed} kts</div>}
-                {entity.heading !== undefined && <div><span style={{ color: '#006617' }}>HDG:</span> {Math.round(entity.heading)}°</div>}
+                {entity.callsign && <div><span style={{ color: '#5a6a7e' }}>CALLSIGN:</span> <span style={{ color: '#29D3FF' }}>{entity.callsign}</span></div>}
+                <div><span style={{ color: '#5a6a7e' }}>CLASS:</span> <span style={{ color: entity.classification === 'military' ? '#FFB547' : entity.classification === 'unknown' ? '#FF4040' : '#2DFF9C' }}>{entity.classification.toUpperCase()}</span></div>
+                {entity.altitude && <div><span style={{ color: '#5a6a7e' }}>ALT:</span> <span style={{ color: '#c5d0de' }}>{entity.altitude.toLocaleString()} ft</span></div>}
+                {entity.speed && <div><span style={{ color: '#5a6a7e' }}>SPD:</span> <span style={{ color: '#c5d0de' }}>{entity.speed} kts</span></div>}
+                {entity.heading !== undefined && <div><span style={{ color: '#5a6a7e' }}>HDG:</span> <span style={{ color: '#c5d0de' }}>{Math.round(entity.heading)}°</span></div>}
                 {entity.threatScore !== undefined && entity.threatScore > 0 && (
-                  <div style={{ marginTop: '6px', padding: '4px 0', borderTop: '1px solid rgba(0,255,65,0.15)' }}>
-                    <span style={{ color: '#006617' }}>THREAT:</span>{' '}
+                  <div style={{ marginTop: '6px', padding: '4px 0', borderTop: '1px solid rgba(41,211,255,0.12)' }}>
+                    <span style={{ color: '#5a6a7e' }}>THREAT:</span>{' '}
                     <span style={{ color: getThreatColor(entity.threatScore), fontWeight: 'bold' }}>{entity.threatScore}/100</span>
                   </div>
                 )}
-                <div style={{ marginTop: '4px', color: '#00aa2a', fontSize: '10px' }}>{entity.details}</div>
-                <div style={{ marginTop: '4px', color: '#006617', fontSize: '9px' }}>SRC: {entity.source}</div>
+                <div style={{ marginTop: '4px', color: '#8899aa', fontSize: '10px' }}>{entity.details}</div>
+                <div style={{ marginTop: '4px', color: '#5a6a7e', fontSize: '9px' }}>SRC: {entity.source}</div>
               </div>
             </Popup>
           </Marker>
