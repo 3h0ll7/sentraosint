@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Radar, Radio, ChevronLeft, ChevronRight, RefreshCw, Wifi, WifiOff, Route, Link2, Grid3x3, Globe, Thermometer, Crosshair, Waves } from 'lucide-react';
+import { Radar, Radio, ChevronLeft, ChevronRight, RefreshCw, Wifi, WifiOff, Route, Link2, Grid3x3, Globe, Thermometer, Crosshair, Waves, Flame } from 'lucide-react';
 import MissionControlBg from '@/components/MissionControlBg';
 import OSINTMap from '@/components/OSINTMap';
 import LayerControl from '@/components/LayerControl';
@@ -308,6 +308,23 @@ export default function Index() {
                     </div>
                   </TelemetrySection>
                 )}
+
+                {/* Wildfires — compact footer widget, auto-refreshes every 30s */}
+                <div className="rounded-md px-3 py-2 bg-secondary/30 border border-border/40">
+                  <div className="flex items-center gap-2">
+                    <Flame className="w-3 h-3 text-orange-400 flex-shrink-0" />
+                    <span className="text-[8px] font-display font-bold text-orange-400/80 tracking-wider">ACTIVE FIRES</span>
+                    <span className="text-[8px] font-mono text-muted-foreground ml-auto tabular-nums">
+                      {feedStatus.firms.count > 0 ? `${feedStatus.firms.count} detected` : '—'}
+                    </span>
+                    {feedStatus.firms.lastFetch && (
+                      <span className="text-[7px] font-mono text-muted-foreground/60">
+                        {feedStatus.firms.lastFetch.toLocaleTimeString()}
+                      </span>
+                    )}
+                    <div className="w-1.5 h-1.5 rounded-full bg-orange-400/60 animate-pulse" />
+                  </div>
+                </div>
               </div>
             </motion.aside>
           )}

@@ -101,6 +101,14 @@ export function useOSINTFeeds() {
     fetchAll();
   }, [fetchAll]);
 
+  // Auto-refresh FIRMS every 30 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchFIRMS();
+    }, 30000);
+    return () => clearInterval(interval);
+  }, [fetchFIRMS]);
+
   return {
     feedStatus,
     fetchOpenSky,
