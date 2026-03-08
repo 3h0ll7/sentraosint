@@ -13,6 +13,27 @@ interface GdeltArticle {
   seendate: string;
 }
 
+function extractJson(text: string): unknown {
+  let cleaned = text.replace(/```json?\s*/gi, "").replace(/```\s*/g, "").trim();
+  const start = cleaned.search(/[\{\[]/);
+  const bracket = start !== -1 && cleaned[start] === "[" ? "]" : "}";
+  const end = cleaned.lastIndexOf(bracket);
+  if (start === -1 || end === -1 || end <= start) throw new Error("No JSON found");
+  cleaned = cleaned.substring(start, end + 1);
+  try { return JSON.parse(cleaned); } catch {
+    cleaned = cleaned.replace(/,\s*}/g, "}").replace(/,\s*]/g, "]").replace(/[\x00-\x1F\x7F]/g, "");
+    try { return JSON.parse(cleaned); } catch {
+      // Try to recover truncated array
+      const lastBrace = cleaned.lastIndexOf("}");
+      if (lastBrace > 0) {
+        const repaired = cleaned.substring(0, lastBrace + 1) + "]";
+        return JSON.parse(repaired);
+      }
+      throw new Error("Cannot parse JSON");
+    }
+  }
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
@@ -22,31 +43,35 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-    // Single combined GDELT query to avoid rate limiting
-    const gdeltUrl = `https://api.gdeltproject.org/api/v2/doc/doc?query=${encodeURIComponent("military OR conflict OR war OR economy OR sanctions OR trade OR tariff OR pandemic OR health OR political OR crisis")}&mode=artlist&maxrecords=15&format=json&sort=DateDesc&timespan=24h`;
-    console.log("Fetching GDELT combined:", gdeltUrl);
+    // Single combined GDELT query
+    const gdeltUrl = `https://api.gdeltproject.org/api/v2/doc/doc?query=${encodeURIComponent("military OR conflict OR economy OR sanctions OR trade OR pandemic OR health OR political OR crisis")}&mode=artlist&maxrecords=15&format=json&sort=DateDesc&timespan=24h`;
+    console.log("Fetching GDELT:", gdeltUrl);
 
     const res = await fetch(gdeltUrl);
-    if (!res.ok) {
-      const body = await res.text();
-      console.warn(`GDELT error: ${res.status}`, body.slice(0, 200));
-      // Return cached count
-      const { count } = await supabase.from("global_events").select("id", { count: "exact", head: true }).like("source", "GDELT/%");
-      return new Response(JSON.stringify({ news: count ?? 0, cached: true, message: "GDELT rate limited — using cached data" }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    const rawText = await res.text();
+
+    // Check for non-JSON / rate-limit responses (GDELT sometimes returns 200 with plain text)
+    let articles: GdeltArticle[] = [];
+    if (res.ok && rawText.trim().startsWith("{")) {
+      try {
+        const data = extractJson(rawText) as any;
+        articles = (data.articles || []).slice(0, 15);
+      } catch (parseErr) {
+        console.warn("GDELT JSON parse failed:", parseErr, "Raw:", rawText.slice(0, 200));
+      }
+    } else {
+      console.warn(`GDELT non-JSON response (${res.status}):`, rawText.slice(0, 200));
     }
 
-    const data = await res.json();
-    const articles: GdeltArticle[] = (data.articles || []).slice(0, 15);
-
+    // If no articles, return cached data
     if (articles.length === 0) {
-      return new Response(JSON.stringify({ news: 0, message: "No articles from GDELT" }), {
+      const { count } = await supabase.from("global_events").select("id", { count: "exact", head: true }).like("source", "GDELT/%");
+      return new Response(JSON.stringify({ news: count ?? 0, cached: true, message: "Using cached GDELT data" }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // Use AI to classify all articles in one batch
+    // AI classification
     const classifiedEvents: any[] = [];
 
     if (LOVABLE_API_KEY) {
@@ -83,25 +108,26 @@ Respond ONLY with the JSON array, no markdown.`,
         if (aiRes.ok) {
           const aiData = await aiRes.json();
           const content = aiData.choices?.[0]?.message?.content || "";
-          const jsonMatch = content.replace(/```json?\n?/g, "").replace(/```/g, "").trim();
-          const classifications = JSON.parse(jsonMatch);
+          const classifications = extractJson(content) as any[];
 
-          for (const cls of classifications) {
-            const article = articles[cls.index];
-            if (!article) continue;
-            classifiedEvents.push({
-              category: cls.category || "political",
-              severity: cls.severity || "medium",
-              title: article.title,
-              description: cls.summary || null,
-              source: `GDELT/${article.domain}`,
-              country: cls.country || null,
-              lat: cls.lat || null,
-              lng: cls.lng || null,
-              url: article.url,
-              is_breaking: cls.is_breaking || false,
-              raw_data: { domain: article.domain, seendate: article.seendate },
-            });
+          if (Array.isArray(classifications)) {
+            for (const cls of classifications) {
+              const article = articles[cls.index];
+              if (!article) continue;
+              classifiedEvents.push({
+                category: cls.category || "political",
+                severity: cls.severity || "medium",
+                title: article.title,
+                description: cls.summary || null,
+                source: `GDELT/${article.domain}`,
+                country: cls.country || null,
+                lat: cls.lat || null,
+                lng: cls.lng || null,
+                url: article.url,
+                is_breaking: cls.is_breaking || false,
+                raw_data: { domain: article.domain, seendate: article.seendate },
+              });
+            }
           }
         } else {
           console.warn("AI classification failed:", aiRes.status);
@@ -111,7 +137,7 @@ Respond ONLY with the JSON array, no markdown.`,
       }
     }
 
-    // Fallback: if AI didn't classify any, use articles directly
+    // Fallback: use articles directly without classification
     if (classifiedEvents.length === 0) {
       for (const article of articles) {
         classifiedEvents.push({
