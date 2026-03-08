@@ -41,7 +41,10 @@ export default function Index() {
     timelinePosition, setTimelinePosition,
     isReplayPlaying, setIsReplayPlaying,
     replaySpeed, setReplaySpeed,
-  } = useOSINTData(5000);
+  } = useOSINTData(45000);
+
+  // Smooth interpolation of aircraft/ship positions between API updates
+  const interpolatedEntities = useEntityInterpolation(entities);
 
   const {
     events: globalEvents,
