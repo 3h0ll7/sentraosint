@@ -23,7 +23,7 @@ const FEED_CONFIG = [
 ];
 
 export default function LiveFeedsPanel({
-  feedStatus, onFetchOpenSky, onFetchEarthquakes, onFetchFIRMS, onFetchGDACS, onFetchOSINTNews, onFetchAll,
+  feedStatus, onFetchOpenSky, onFetchEarthquakes, onFetchFIRMS, onFetchGDACS, onFetchOSINTNews, onFetchGoogleNews, onFetchAll,
 }: LiveFeedsPanelProps) {
   const handlers: Record<string, () => void> = {
     opensky: onFetchOpenSky,
