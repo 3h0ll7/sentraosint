@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Radar, Radio, ChevronLeft, ChevronRight, RefreshCw, Wifi, WifiOff, Route, Link2, Grid3x3, Globe, Thermometer, Crosshair, Waves } from 'lucide-react';
+import { Radar, Radio, ChevronLeft, ChevronRight, RefreshCw, Wifi, WifiOff, Route, Link2, Grid3x3, Globe, Thermometer, Crosshair, Waves, Flame } from 'lucide-react';
 import MissionControlBg from '@/components/MissionControlBg';
 import OSINTMap from '@/components/OSINTMap';
 import LayerControl from '@/components/LayerControl';
