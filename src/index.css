@@ -251,3 +251,12 @@
 .impact-wave-0 { animation: impact-pulse 2s ease-in-out infinite; }
 .impact-wave-1 { animation: impact-pulse 2.5s ease-in-out 0.5s infinite; }
 .impact-wave-2 { animation: impact-pulse 3s ease-in-out 1s infinite; }
+
+/* Critical alert flash */
+@keyframes critical-flash {
+  0%, 100% { background-color: hsl(var(--destructive) / 0.15); }
+  50% { background-color: hsl(var(--destructive) / 0.3); }
+}
+.critical-alert-flash {
+  animation: critical-flash 1.5s ease-in-out infinite;
+}
