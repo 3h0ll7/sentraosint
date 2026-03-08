@@ -189,7 +189,7 @@ export default function Index() {
       <div className="flex flex-1 overflow-hidden relative">
         <div className="flex-1 relative">
           <OSINTMap
-            entities={entities}
+            entities={interpolatedEntities}
             visibleLayers={visibleLayers}
             onEntitySelect={setSelectedEntity}
             selectedEntity={selectedEntity}

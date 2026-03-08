@@ -200,7 +200,8 @@ export default function OSINTMap({
               </div>
             </Popup>
           </Marker>
-        ))}
+          );
+        })}
       </MapContainer>
       <MapStyleSelector currentStyle={mapStyle} onStyleChange={setMapStyle} />
     </div>
