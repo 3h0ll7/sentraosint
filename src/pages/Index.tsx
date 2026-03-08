@@ -283,8 +283,8 @@ export default function Index() {
                   </TelemetrySection>
                 )}
 
-                <TelemetrySection title="BREAKING INTEL" badge={allEvents.filter(e => e.is_breaking).length}>
-                  <BreakingNewsPanel events={globalEvents} />
+                <TelemetrySection title="BREAKING INTEL" badge={allEvents.filter(e => e.category !== 'disaster' && e.is_breaking).length}>
+                  <BreakingNewsPanel events={allEvents} />
                 </TelemetrySection>
 
                 <TelemetrySection title="MISSION ALERTS" badge={alerts.filter(a => a.severity === 'critical').length}>
