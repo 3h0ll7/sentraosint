@@ -2,65 +2,66 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Rajdhani:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@300;400;500;600;700&display=swap');
 
 @layer base {
   :root {
-    --background: 120 10% 3%;
-    --foreground: 120 100% 65%;
+    --background: 220 40% 7%;
+    --foreground: 210 30% 80%;
 
-    --card: 120 8% 6%;
-    --card-foreground: 120 100% 65%;
+    --card: 222 35% 10%;
+    --card-foreground: 210 30% 80%;
 
-    --popover: 120 8% 6%;
-    --popover-foreground: 120 100% 65%;
+    --popover: 222 35% 10%;
+    --popover-foreground: 210 30% 80%;
 
-    --primary: 120 100% 45%;
-    --primary-foreground: 120 10% 3%;
+    --primary: 193 100% 58%;
+    --primary-foreground: 220 40% 7%;
 
-    --secondary: 120 8% 10%;
-    --secondary-foreground: 120 60% 50%;
+    --secondary: 222 30% 14%;
+    --secondary-foreground: 210 20% 60%;
 
-    --muted: 120 6% 8%;
-    --muted-foreground: 120 30% 35%;
+    --muted: 222 25% 12%;
+    --muted-foreground: 215 15% 45%;
 
-    --accent: 120 80% 40%;
-    --accent-foreground: 120 10% 3%;
+    --accent: 155 100% 60%;
+    --accent-foreground: 220 40% 7%;
 
-    --destructive: 0 80% 50%;
+    --destructive: 0 80% 55%;
     --destructive-foreground: 0 0% 100%;
 
-    --warning: 45 100% 50%;
-    --warning-foreground: 120 10% 3%;
+    --warning: 35 100% 64%;
+    --warning-foreground: 220 40% 7%;
 
-    --border: 120 20% 12%;
-    --input: 120 20% 12%;
-    --ring: 120 100% 45%;
+    --border: 220 25% 16%;
+    --input: 220 25% 16%;
+    --ring: 193 100% 58%;
 
-    --radius: 0.25rem;
+    --radius: 0.375rem;
 
-    --glow-primary: 0 0 20px hsl(120 100% 45% / 0.4);
-    --glow-accent: 0 0 20px hsl(120 80% 40% / 0.3);
-    --glow-warning: 0 0 20px hsl(45 100% 50% / 0.3);
-    --glow-destructive: 0 0 20px hsl(0 80% 50% / 0.3);
+    --glow-primary: 0 0 20px hsl(193 100% 58% / 0.3);
+    --glow-accent: 0 0 20px hsl(155 100% 60% / 0.3);
+    --glow-warning: 0 0 20px hsl(35 100% 64% / 0.3);
+    --glow-destructive: 0 0 20px hsl(0 80% 55% / 0.3);
 
-    --aircraft: 120 100% 50%;
-    --ship: 120 60% 40%;
-    --base: 45 100% 50%;
-    --alert: 0 80% 50%;
-    --strategic: 120 80% 35%;
+    --aircraft: 193 100% 58%;
+    --ship: 155 100% 60%;
+    --base: 35 100% 64%;
+    --alert: 0 80% 55%;
+    --strategic: 210 60% 50%;
 
-    --sidebar-background: 120 8% 5%;
-    --sidebar-foreground: 120 100% 65%;
-    --sidebar-primary: 120 100% 45%;
-    --sidebar-primary-foreground: 120 10% 3%;
-    --sidebar-accent: 120 6% 8%;
-    --sidebar-accent-foreground: 120 60% 50%;
-    --sidebar-border: 120 20% 12%;
-    --sidebar-ring: 120 100% 45%;
+    --sidebar-background: 222 35% 8%;
+    --sidebar-foreground: 210 30% 80%;
+    --sidebar-primary: 193 100% 58%;
+    --sidebar-primary-foreground: 220 40% 7%;
+    --sidebar-accent: 222 25% 12%;
+    --sidebar-accent-foreground: 210 20% 60%;
+    --sidebar-border: 220 25% 16%;
+    --sidebar-ring: 193 100% 58%;
 
-    --font-mono: 'Share Tech Mono', 'JetBrains Mono', monospace;
-    --font-sans: 'Share Tech Mono', 'JetBrains Mono', monospace;
+    --font-display: 'Orbitron', sans-serif;
+    --font-data: 'Rajdhani', sans-serif;
+    --font-mono: 'IBM Plex Mono', monospace;
   }
 }
 
@@ -70,14 +71,21 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-family: var(--font-mono);
+    font-family: var(--font-data);
   }
 }
 
 @layer components {
+  .font-display {
+    font-family: var(--font-display);
+  }
+  .font-data {
+    font-family: var(--font-data);
+  }
   .font-mono {
     font-family: var(--font-mono);
   }
+
   .glow-primary {
     box-shadow: var(--glow-primary);
   }
@@ -91,14 +99,14 @@
     box-shadow: var(--glow-destructive);
   }
 
-  /* Matrix rain scanline */
+  /* Scanline overlay */
   .scanline {
     background: repeating-linear-gradient(
       0deg,
       transparent,
-      transparent 2px,
-      hsl(120 100% 45% / 0.04) 2px,
-      hsl(120 100% 45% / 0.04) 4px
+      transparent 3px,
+      hsl(193 100% 58% / 0.015) 3px,
+      hsl(193 100% 58% / 0.015) 6px
     );
     pointer-events: none;
   }
@@ -108,142 +116,135 @@
   }
 
   .blink {
-    animation: blink 1.2s ease-in-out infinite;
+    animation: blink 1.5s ease-in-out infinite;
   }
 
-  /* Matrix grid */
+  /* Ops grid */
   .grid-bg {
     background-image:
-      linear-gradient(hsl(120 100% 45% / 0.06) 1px, transparent 1px),
-      linear-gradient(90deg, hsl(120 100% 45% / 0.06) 1px, transparent 1px);
-    background-size: 50px 50px;
+      linear-gradient(hsl(193 100% 58% / 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(193 100% 58% / 0.04) 1px, transparent 1px);
+    background-size: 60px 60px;
   }
 
   .grid-bg-fine {
     background-image:
-      linear-gradient(hsl(120 100% 45% / 0.03) 1px, transparent 1px),
-      linear-gradient(90deg, hsl(120 100% 45% / 0.03) 1px, transparent 1px);
-    background-size: 12px 12px;
+      linear-gradient(hsl(193 100% 58% / 0.02) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(193 100% 58% / 0.02) 1px, transparent 1px);
+    background-size: 15px 15px;
   }
 
-  /* Matrix rain animation */
-  .matrix-rain {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-    z-index: 0;
-    overflow: hidden;
+  /* Mission control glow */
+  .mc-glow {
+    text-shadow:
+      0 0 4px hsl(193 100% 58% / 0.5),
+      0 0 12px hsl(193 100% 58% / 0.2);
   }
 
-  .matrix-column {
-    position: absolute;
-    top: -100%;
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 14px;
-    color: hsl(120 100% 45% / 0.15);
-    text-shadow: 0 0 8px hsl(120 100% 45% / 0.3);
-    writing-mode: vertical-rl;
-    animation: matrix-fall linear infinite;
-    white-space: nowrap;
+  .mc-border {
+    border-color: hsl(193 100% 58% / 0.2);
+    box-shadow:
+      inset 0 0 30px hsl(193 100% 58% / 0.02),
+      0 0 1px hsl(193 100% 58% / 0.15);
   }
 
-  /* Matrix text glow */
-  .matrix-glow {
-    text-shadow: 
-      0 0 4px hsl(120 100% 45% / 0.6),
-      0 0 8px hsl(120 100% 45% / 0.4),
-      0 0 16px hsl(120 100% 45% / 0.2);
+  /* Telemetry panel */
+  .telemetry-panel {
+    background: linear-gradient(180deg, hsl(222 35% 10%) 0%, hsl(222 35% 8%) 100%);
+    border: 1px solid hsl(220 25% 18%);
+    border-top: 2px solid hsl(193 100% 58% / 0.4);
   }
 
-  .matrix-border {
-    border-color: hsl(120 100% 45% / 0.2);
-    box-shadow: 
-      inset 0 0 20px hsl(120 100% 45% / 0.03),
-      0 0 8px hsl(120 100% 45% / 0.05);
-  }
-
-  /* CRT flicker effect */
-  .crt-flicker {
-    animation: crt-flicker 0.15s infinite;
+  /* Radar sweep */
+  .radar-sweep {
+    animation: radar-sweep 4s linear infinite;
   }
 }
 
 @keyframes radar-pulse {
-  0% { transform: scale(0.5); opacity: 0.8; }
+  0% { transform: scale(0.5); opacity: 0.7; }
   100% { transform: scale(3); opacity: 0; }
 }
 
 @keyframes blink {
   0%, 100% { opacity: 1; }
-  50% { opacity: 0.2; }
+  50% { opacity: 0.3; }
 }
 
-@keyframes matrix-fall {
-  0% { transform: translateY(-100vh); }
-  100% { transform: translateY(200vh); }
-}
-
-@keyframes crt-flicker {
-  0% { opacity: 0.97; }
-  50% { opacity: 1; }
-  100% { opacity: 0.98; }
+@keyframes radar-sweep {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 @keyframes glow-pulse {
-  0%, 100% { 
-    text-shadow: 0 0 4px hsl(120 100% 45% / 0.6), 0 0 8px hsl(120 100% 45% / 0.3);
+  0%, 100% {
+    text-shadow: 0 0 4px hsl(193 100% 58% / 0.5), 0 0 8px hsl(193 100% 58% / 0.2);
   }
-  50% { 
-    text-shadow: 0 0 8px hsl(120 100% 45% / 0.8), 0 0 16px hsl(120 100% 45% / 0.5), 0 0 24px hsl(120 100% 45% / 0.2);
+  50% {
+    text-shadow: 0 0 8px hsl(193 100% 58% / 0.7), 0 0 20px hsl(193 100% 58% / 0.3);
   }
 }
 
-/* Leaflet overrides for Matrix theme */
+@keyframes status-pulse {
+  0%, 100% { opacity: 1; box-shadow: 0 0 4px currentColor; }
+  50% { opacity: 0.6; box-shadow: 0 0 8px currentColor; }
+}
+
+/* Leaflet overrides for mission control theme */
 .leaflet-container {
-  background: hsl(120 10% 3%) !important;
+  background: hsl(220 40% 7%) !important;
 }
 .leaflet-control-zoom a {
-  background: hsl(120 8% 6%) !important;
-  color: hsl(120 100% 45%) !important;
-  border-color: hsl(120 20% 12%) !important;
-  font-family: 'Share Tech Mono', monospace !important;
+  background: hsl(222 35% 12%) !important;
+  color: hsl(193 100% 58%) !important;
+  border-color: hsl(220 25% 18%) !important;
+  font-family: 'IBM Plex Mono', monospace !important;
 }
 .leaflet-control-zoom a:hover {
-  background: hsl(120 8% 10%) !important;
-  box-shadow: 0 0 8px hsl(120 100% 45% / 0.3) !important;
+  background: hsl(222 35% 16%) !important;
+  box-shadow: 0 0 8px hsl(193 100% 58% / 0.3) !important;
 }
 .leaflet-control-attribution {
-  background: hsl(120 8% 6% / 0.9) !important;
-  color: hsl(120 30% 35%) !important;
+  background: hsl(222 35% 10% / 0.9) !important;
+  color: hsl(215 15% 45%) !important;
   font-size: 9px !important;
-  font-family: 'Share Tech Mono', monospace !important;
+  font-family: 'IBM Plex Mono', monospace !important;
 }
 .leaflet-control-attribution a {
-  color: hsl(120 100% 45%) !important;
+  color: hsl(193 100% 58%) !important;
 }
 
-/* Scrollbar Matrix style */
+/* Custom popup for mission control */
+.osint-popup .leaflet-popup-content-wrapper {
+  background: transparent !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+}
+.osint-popup .leaflet-popup-tip {
+  background: hsl(222 35% 10%) !important;
+  border: 1px solid hsl(193 100% 58% / 0.3) !important;
+}
+
+/* Scrollbar */
 ::-webkit-scrollbar {
-  width: 4px;
+  width: 5px;
 }
 ::-webkit-scrollbar-track {
-  background: hsl(120 10% 3%);
+  background: hsl(220 40% 7%);
 }
 ::-webkit-scrollbar-thumb {
-  background: hsl(120 100% 45% / 0.3);
-  border-radius: 2px;
+  background: hsl(193 100% 58% / 0.25);
+  border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: hsl(120 100% 45% / 0.5);
+  background: hsl(193 100% 58% / 0.45);
 }
 
 /* Impact wave animations */
 @keyframes impact-pulse {
   0% { opacity: 0.4; transform: scale(1); }
-  50% { opacity: 0.2; transform: scale(1.05); }
+  50% { opacity: 0.15; transform: scale(1.05); }
   100% { opacity: 0.4; transform: scale(1); }
 }
 

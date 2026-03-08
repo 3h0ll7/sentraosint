@@ -14,8 +14,10 @@ export default {
     },
     extend: {
       fontFamily: {
-        sans: ['Share Tech Mono', 'JetBrains Mono', 'monospace'],
-        mono: ['Share Tech Mono', 'JetBrains Mono', 'monospace'],
+        display: ['Orbitron', 'sans-serif'],
+        data: ['Rajdhani', 'sans-serif'],
+        mono: ['IBM Plex Mono', 'monospace'],
+        sans: ['Rajdhani', 'sans-serif'],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -87,17 +89,22 @@ export default {
         },
         "glow-pulse": {
           "0%, 100%": {
-            textShadow: "0 0 4px hsl(120 100% 45% / 0.6), 0 0 8px hsl(120 100% 45% / 0.3)",
+            textShadow: "0 0 4px hsl(193 100% 58% / 0.5), 0 0 8px hsl(193 100% 58% / 0.2)",
           },
           "50%": {
-            textShadow: "0 0 8px hsl(120 100% 45% / 0.8), 0 0 16px hsl(120 100% 45% / 0.5)",
+            textShadow: "0 0 8px hsl(193 100% 58% / 0.7), 0 0 20px hsl(193 100% 58% / 0.3)",
           },
+        },
+        "status-pulse": {
+          "0%, 100%": { opacity: "1" },
+          "50%": { opacity: "0.5" },
         },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
-        "glow-pulse": "glow-pulse 2s ease-in-out infinite",
+        "glow-pulse": "glow-pulse 3s ease-in-out infinite",
+        "status-pulse": "status-pulse 2s ease-in-out infinite",
       },
     },
   },
