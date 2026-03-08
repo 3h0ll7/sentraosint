@@ -49,14 +49,13 @@ serve(async (req) => {
     const url = `https://opensky-network.org/api/states/all?lamin=${lamin}&lomin=${lomin}&lamax=${lamax}&lomax=${lomax}`;
     console.log("Fetching OpenSky:", url);
 
-    const res = await fetchWithRetry(url);
+    const res = await fetchWithTimeout(url);
 
-    // If still rate-limited after retries, return existing cached data count
-    if (res.status === 429) {
-      await res.text(); // consume body
+    // If fetch failed or timed out, return existing cached data
+    if (!res) {
       const { count } = await supabase.from("entities").select("id", { count: "exact", head: true }).like("id", "opensky-%");
-      console.log("Rate limited — serving cached data, count:", count);
-      return new Response(JSON.stringify({ tracked: count ?? 0, cached: true, message: "Rate limited — using cached data" }), {
+      console.log("API unavailable — serving cached data, count:", count);
+      return new Response(JSON.stringify({ tracked: count ?? 0, cached: true, message: "OpenSky API unavailable — using cached data" }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
