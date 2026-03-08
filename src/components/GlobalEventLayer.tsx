@@ -75,16 +75,16 @@ export default function GlobalEventLayer({ events, visible }: GlobalEventLayerPr
       const marker = L.marker([event.lat, event.lng], { icon: divIcon });
 
       const popupContent = `
-        <div style="background:#0a0f1a;color:#e5e7eb;padding:10px 14px;border-radius:8px;min-width:220px;font-family:'JetBrains Mono',monospace;font-size:11px;border:1px solid ${color}44;">
+        <div style="background:#000800;color:#00ff41;padding:10px 14px;border-radius:4px;min-width:220px;font-family:'Share Tech Mono',monospace;font-size:11px;border:1px solid rgba(0,255,65,0.3);box-shadow:0 0 20px rgba(0,255,65,0.1);">
           <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
             <span style="font-size:14px;">${icon}</span>
-            <span style="color:${color};font-weight:bold;font-size:9px;letter-spacing:1px;">${event.category.toUpperCase()}</span>
-            <span style="margin-left:auto;font-size:9px;color:#6b7280;text-transform:uppercase;">${event.severity}</span>
+            <span style="color:${color};font-weight:bold;font-size:9px;letter-spacing:2px;text-shadow:0 0 6px ${color}88;">${event.category.toUpperCase()}</span>
+            <span style="margin-left:auto;font-size:9px;color:#006617;text-transform:uppercase;">${event.severity}</span>
           </div>
-          <div style="font-weight:600;margin-bottom:4px;">${event.title}</div>
-          ${event.description ? `<div style="color:#9ca3af;font-size:10px;margin-bottom:4px;">${event.description}</div>` : ''}
-          ${event.country ? `<div style="color:#6b7280;font-size:9px;">📍 ${event.country}</div>` : ''}
-          ${event.source ? `<div style="color:#6b7280;font-size:9px;">SRC: ${event.source}</div>` : ''}
+          <div style="font-weight:600;margin-bottom:4px;text-shadow:0 0 4px rgba(0,255,65,0.3);">${event.title}</div>
+          ${event.description ? `<div style="color:#00aa2a;font-size:10px;margin-bottom:4px;">${event.description}</div>` : ''}
+          ${event.country ? `<div style="color:#006617;font-size:9px;">📍 ${event.country}</div>` : ''}
+          ${event.source ? `<div style="color:#006617;font-size:9px;">SRC: ${event.source}</div>` : ''}
         </div>
       `;
       marker.bindPopup(popupContent, { className: 'osint-popup' });
