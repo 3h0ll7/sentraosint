@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Plane, Ship, Building2, AlertTriangle, Eye, Radio } from 'lucide-react';
+import { Plane, Ship, Building2, AlertTriangle, Eye, Radio, Globe, CloudLightning } from 'lucide-react';
 
 interface StatsBarProps {
   stats: {
@@ -11,9 +11,10 @@ interface StatsBarProps {
     activeAlerts: number;
     unknownEntities: number;
   };
+  globalEventCount?: number;
 }
 
-export default function StatsBar({ stats }: StatsBarProps) {
+export default function StatsBar({ stats, globalEventCount = 0 }: StatsBarProps) {
   const items = [
     { label: 'Aircraft', value: stats.totalAircraft, icon: Plane, colorClass: 'text-aircraft' },
     { label: 'Naval', value: stats.totalShips, icon: Ship, colorClass: 'text-ship' },
@@ -21,6 +22,7 @@ export default function StatsBar({ stats }: StatsBarProps) {
     { label: 'Mil Track', value: stats.militaryAircraft + stats.militaryShips, icon: Eye, colorClass: 'text-warning' },
     { label: 'Alerts', value: stats.activeAlerts, icon: AlertTriangle, colorClass: 'text-alert' },
     { label: 'Unknown', value: stats.unknownEntities, icon: Radio, colorClass: 'text-strategic' },
+    { label: 'Events', value: globalEventCount, icon: Globe, colorClass: 'text-accent' },
   ];
 
   return (

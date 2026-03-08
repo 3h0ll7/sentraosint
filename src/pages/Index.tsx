@@ -1,14 +1,18 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Radar, Radio, ChevronLeft, ChevronRight, RefreshCw, Wifi, WifiOff, Route, Link2, Grid3x3 } from 'lucide-react';
+import { Radar, Radio, ChevronLeft, ChevronRight, RefreshCw, Wifi, WifiOff, Route, Link2, Grid3x3, Globe } from 'lucide-react';
 import OSINTMap from '@/components/OSINTMap';
 import LayerControl from '@/components/LayerControl';
+import EventLayerControl from '@/components/EventLayerControl';
 import AlertsPanel from '@/components/AlertsPanel';
 import ActivityFeed from '@/components/ActivityFeed';
+import BreakingNewsPanel from '@/components/BreakingNewsPanel';
+import GlobalAlertBanner from '@/components/GlobalAlertBanner';
 import StatsBar from '@/components/StatsBar';
 import EntityDetail from '@/components/EntityDetail';
 import TimelineControl from '@/components/TimelineControl';
 import { useOSINTData } from '@/hooks/useOSINTData';
+import { useGlobalEvents, EventCategory } from '@/hooks/useGlobalEvents';
 import { EntityType, MapEntity } from '@/data/mockData';
 
 export default function Index() {
@@ -22,9 +26,19 @@ export default function Index() {
     replaySpeed, setReplaySpeed,
   } = useOSINTData(5000);
 
+  const {
+    events: globalEvents,
+    allEvents,
+    visibleCategories,
+    toggleCategory,
+    breakingAlert,
+    dismissBreaking,
+  } = useGlobalEvents(30000);
+
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [selectedEntity, setSelectedEntity] = useState<MapEntity | null>(null);
   const [showGrid, setShowGrid] = useState(true);
+  const [showGlobalEvents, setShowGlobalEvents] = useState(true);
   const [visibleLayers, setVisibleLayers] = useState<Record<EntityType, boolean>>({
     aircraft: true,
     ship: true,
@@ -39,12 +53,21 @@ export default function Index() {
     return counts;
   }, [entities]);
 
+  const eventCategoryCounts = useMemo(() => {
+    const counts: Record<EventCategory, number> = { military: 0, economy: 0, trade: 0, health: 0, disaster: 0, political: 0 };
+    allEvents.forEach(e => { counts[e.category] = (counts[e.category] || 0) + 1; });
+    return counts;
+  }, [allEvents]);
+
   const toggleLayer = (layer: EntityType) => {
     setVisibleLayers(prev => ({ ...prev, [layer]: !prev[layer] }));
   };
 
   return (
     <div className="h-screen w-screen flex flex-col overflow-hidden bg-background">
+      {/* Breaking Alert Banner */}
+      <GlobalAlertBanner alert={breakingAlert} onDismiss={dismissBreaking} />
+
       {/* Header */}
       <header className="flex items-center justify-between px-4 py-2 bg-card border-b border-border flex-shrink-0">
         <div className="flex items-center gap-3">
@@ -53,7 +76,7 @@ export default function Index() {
             <h1 className="text-sm font-bold font-mono tracking-wider text-primary">OSINT OVERWATCH</h1>
           </div>
           <span className="text-[9px] font-mono text-muted-foreground px-1.5 py-0.5 rounded bg-secondary">
-            MIDDLE EAST THEATER
+            GLOBAL INTELLIGENCE
           </span>
         </div>
         <div className="flex items-center gap-2">
@@ -68,6 +91,10 @@ export default function Index() {
           <HeaderBtn active={showLinks} onClick={() => setShowLinks(!showLinks)}
             icon={<Link2 className="w-3 h-3" />} label="LINKS"
             activeClass="bg-strategic/10 text-strategic border-strategic/30"
+          />
+          <HeaderBtn active={showGlobalEvents} onClick={() => setShowGlobalEvents(!showGlobalEvents)}
+            icon={<Globe className="w-3 h-3" />} label="EVENTS"
+            activeClass="bg-accent/10 text-accent border-accent/30"
           />
           <HeaderBtn active={showGrid} onClick={() => setShowGrid(!showGrid)}
             icon={<Grid3x3 className="w-3 h-3" />} label="GRID"
@@ -89,7 +116,7 @@ export default function Index() {
       </header>
 
       {/* Stats Bar */}
-      <StatsBar stats={stats} />
+      <StatsBar stats={stats} globalEventCount={allEvents.length} />
 
       {/* Main Content */}
       <div className="flex flex-1 overflow-hidden relative">
@@ -104,6 +131,8 @@ export default function Index() {
             showTrails={showTrails}
             links={links}
             showLinks={showLinks}
+            globalEvents={globalEvents}
+            showGlobalEvents={showGlobalEvents}
           />
 
           {/* Grid + Scanline overlay */}
@@ -154,8 +183,16 @@ export default function Index() {
               className="h-full border-l border-border bg-card overflow-hidden flex-shrink-0"
             >
               <div className="w-[320px] h-full overflow-y-auto p-3 space-y-4">
-                <Section title="MAP LAYERS">
+                <Section title="ENTITY LAYERS">
                   <LayerControl visibleLayers={visibleLayers} onToggle={toggleLayer} counts={layerCounts} />
+                </Section>
+
+                <Section title="GLOBAL EVENT LAYERS" badge={allEvents.length}>
+                  <EventLayerControl visibleCategories={visibleCategories} onToggle={toggleCategory} counts={eventCategoryCounts} />
+                </Section>
+
+                <Section title="BREAKING NEWS" badge={allEvents.filter(e => e.is_breaking).length}>
+                  <BreakingNewsPanel events={globalEvents} />
                 </Section>
 
                 <Section title="THREAT ALERTS" badge={alerts.filter(a => a.severity === 'critical').length}>
