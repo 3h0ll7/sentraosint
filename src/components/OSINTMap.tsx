@@ -103,6 +103,16 @@ function FlyToEntity({ entity }: { entity: MapEntity | null }) {
   return null;
 }
 
+function FlyToCoords({ target }: { target: { lat: number; lng: number } | null }) {
+  const map = useMap();
+  useEffect(() => {
+    if (target) {
+      map.flyTo([target.lat, target.lng], 7, { duration: 2.0 });
+    }
+  }, [target, map]);
+  return null;
+}
+
 function MapTiles({ style }: { style: MapStyle }) {
   const urls = getTileUrls(style);
   return (
