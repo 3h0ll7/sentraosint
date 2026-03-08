@@ -5,9 +5,11 @@ import { MapEntity, EntityType } from '@/data/mockData';
 import { useEffect, useMemo, useState } from 'react';
 import TrailLayer from '@/components/TrailLayer';
 import LinkLayer from '@/components/LinkLayer';
+import GlobalEventLayer from '@/components/GlobalEventLayer';
 import { TrailHistory } from '@/hooks/useOSINTData';
 import { getThreatColor, LinkConnection } from '@/data/threatEngine';
 import MapStyleSelector, { MapStyle, getTileUrls } from '@/components/MapStyleSelector';
+import { GlobalEvent } from '@/hooks/useGlobalEvents';
 
 interface OSINTMapProps {
   entities: MapEntity[];
@@ -18,6 +20,8 @@ interface OSINTMapProps {
   showTrails: boolean;
   links: LinkConnection[];
   showLinks: boolean;
+  globalEvents?: GlobalEvent[];
+  showGlobalEvents?: boolean;
 }
 
 const ICON_SYMBOLS: Record<EntityType, string> = {
@@ -46,14 +50,12 @@ function createIcon(entity: MapEntity): L.DivIcon {
   const rotation = entity.heading || 0;
   const size = entity.type === 'base' || entity.type === 'strategic' ? 28 : 22;
 
-  // Multi-ring radar pulse for military/unknown
   const pulseRings = (isUnknown || isMilitary) ? `
     <div style="position:absolute;inset:-6px;border-radius:50%;border:1px solid ${color};opacity:0.6;animation:radar-pulse 2.5s ease-out infinite;"></div>
     <div style="position:absolute;inset:-4px;border-radius:50%;border:0.5px solid ${color};opacity:0.3;animation:radar-pulse 2.5s ease-out 0.8s infinite;"></div>
     ${threatScore >= 60 ? `<div style="position:absolute;inset:-8px;border-radius:50%;border:1px solid ${color};opacity:0.2;animation:radar-pulse 2.5s ease-out 1.6s infinite;"></div>` : ''}
   ` : '';
 
-  // Threat indicator ring
   const threatRing = hasThreat && threatScore >= 30 ? `
     <div style="position:absolute;inset:-2px;border-radius:50%;border:2px solid ${color};opacity:${Math.min(1, threatScore / 100)};"></div>
   ` : '';
@@ -98,23 +100,17 @@ function MapTiles({ style }: { style: MapStyle }) {
   const urls = getTileUrls(style);
   return (
     <>
-      <TileLayer
-        key={`base-${style}`}
-        url={urls.base}
-        attribution='&copy; CARTO / Esri'
-      />
-      {urls.labels && (
-        <TileLayer
-          key={`labels-${style}`}
-          url={urls.labels}
-          attribution=""
-        />
-      )}
+      <TileLayer key={`base-${style}`} url={urls.base} attribution='&copy; CARTO / Esri' />
+      {urls.labels && <TileLayer key={`labels-${style}`} url={urls.labels} attribution="" />}
     </>
   );
 }
 
-export default function OSINTMap({ entities, visibleLayers, onEntitySelect, selectedEntity, trails, showTrails, links, showLinks }: OSINTMapProps) {
+export default function OSINTMap({
+  entities, visibleLayers, onEntitySelect, selectedEntity,
+  trails, showTrails, links, showLinks,
+  globalEvents = [], showGlobalEvents = true,
+}: OSINTMapProps) {
   const [mapStyle, setMapStyle] = useState<MapStyle>('dark');
 
   const filteredEntities = useMemo(
@@ -141,14 +137,13 @@ export default function OSINTMap({ entities, visibleLayers, onEntitySelect, sele
         <FlyToEntity entity={selectedEntity ?? null} />
         <TrailLayer trails={trails} visible={showTrails} entityTypes={entityTypes} />
         <LinkLayer links={links} visible={showLinks} />
+        <GlobalEventLayer events={globalEvents} visible={showGlobalEvents} />
         {filteredEntities.map(entity => (
           <Marker
             key={entity.id}
             position={[entity.lat, entity.lng]}
             icon={createIcon(entity)}
-            eventHandlers={{
-              click: () => onEntitySelect?.(entity),
-            }}
+            eventHandlers={{ click: () => onEntitySelect?.(entity) }}
           >
             <Popup className="osint-popup">
               <div style={{
@@ -169,9 +164,7 @@ export default function OSINTMap({ entities, visibleLayers, onEntitySelect, sele
                 {entity.threatScore !== undefined && entity.threatScore > 0 && (
                   <div style={{ marginTop: '6px', padding: '4px 0', borderTop: '1px solid #1f2937' }}>
                     <span style={{ color: '#6b7280' }}>THREAT:</span>{' '}
-                    <span style={{ color: getThreatColor(entity.threatScore), fontWeight: 'bold' }}>
-                      {entity.threatScore}/100
-                    </span>
+                    <span style={{ color: getThreatColor(entity.threatScore), fontWeight: 'bold' }}>{entity.threatScore}/100</span>
                   </div>
                 )}
                 <div style={{ marginTop: '4px', color: '#9ca3af', fontSize: '10px' }}>{entity.details}</div>

@@ -1,1 +1,7 @@
 project_id = "nrfjslycfojjmvskuash"
+
+[functions.fetch-earthquakes]
+verify_jwt = false
+
+[functions.classify-event]
+verify_jwt = false
