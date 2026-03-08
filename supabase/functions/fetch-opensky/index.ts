@@ -6,22 +6,27 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-async function fetchWithRetry(url: string, maxRetries = 2): Promise<Response> {
-  for (let attempt = 0; attempt <= maxRetries; attempt++) {
-    const res = await fetch(url, { headers: { "Accept": "application/json" } });
+async function fetchWithTimeout(url: string, timeoutMs = 8000): Promise<Response | null> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+  
+  try {
+    const res = await fetch(url, { 
+      headers: { "Accept": "application/json" },
+      signal: controller.signal
+    });
+    clearTimeout(timeoutId);
+    
     if (res.status === 429) {
-      if (attempt < maxRetries) {
-        const delay = (attempt + 1) * 5000; // 5s, 10s
-        console.log(`Rate limited, waiting ${delay}ms before retry ${attempt + 1}`);
-        await new Promise(r => setTimeout(r, delay));
-        continue;
-      }
-      // All retries exhausted — return cached data instead
-      return res;
+      console.log("Rate limited by OpenSky");
+      return null; // Return null to trigger cache fallback
     }
     return res;
+  } catch (e) {
+    clearTimeout(timeoutId);
+    console.log("OpenSky fetch failed:", e instanceof Error ? e.message : "Unknown error");
+    return null; // Return null to trigger cache fallback
   }
-  throw new Error("Unreachable");
 }
 
 serve(async (req) => {
