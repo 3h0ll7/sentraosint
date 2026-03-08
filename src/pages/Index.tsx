@@ -118,7 +118,7 @@ export default function Index() {
             </div>
             <div>
               <h1 className="text-xs font-display font-bold tracking-[0.25em] text-primary mc-glow leading-none">
-                GLOBAL MONITORING SYSTEM
+                SENTRA OSINT
               </h1>
               <div className="flex items-center gap-3 mt-0.5">
                 <span className="text-[8px] font-mono text-muted-foreground tracking-wider">MISSION CONTROL</span>
