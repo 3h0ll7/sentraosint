@@ -126,12 +126,21 @@ export function useOSINTFeeds() {
     return () => clearInterval(interval);
   }, [fetchFIRMS]);
 
+  // Auto-refresh OSINT news every 5 minutes
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchOSINTNews();
+    }, 300000);
+    return () => clearInterval(interval);
+  }, [fetchOSINTNews]);
+
   return {
     feedStatus,
     fetchOpenSky,
     fetchEarthquakes,
     fetchFIRMS,
     fetchGDACS,
+    fetchOSINTNews,
     fetchAll,
   };
 }
