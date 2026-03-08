@@ -16,7 +16,7 @@ import { GlobalEvent } from '@/hooks/useGlobalEvents';
 import { RiskPoint } from '@/data/riskEngine';
 
 interface OSINTMapProps {
-  entities: MapEntity[];
+  entities: (MapEntity | InterpolatedEntity)[];
   visibleLayers: Record<EntityType, boolean>;
   onEntitySelect?: (entity: MapEntity) => void;
   selectedEntity?: MapEntity | null;
