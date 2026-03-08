@@ -256,6 +256,7 @@ export default function Index() {
                     onFetchFIRMS={fetchFIRMS}
                     onFetchGDACS={fetchGDACS}
                     onFetchOSINTNews={fetchOSINTNews}
+                    onFetchGoogleNews={fetchGoogleNews}
                     onFetchAll={fetchAll}
                   />
                 </TelemetrySection>
