@@ -8,6 +8,7 @@ export interface FeedStatus {
   firms: { loading: boolean; lastFetch: Date | null; count: number };
   gdacs: { loading: boolean; lastFetch: Date | null; count: number };
   news: { loading: boolean; lastFetch: Date | null; count: number };
+  googleNews: { loading: boolean; lastFetch: Date | null; count: number };
 }
 
 const initialStatus: FeedStatus = {
