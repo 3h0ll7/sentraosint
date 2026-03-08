@@ -18,12 +18,12 @@ const CATEGORY_ICONS: Record<EventCategory, string> = {
 };
 
 const CATEGORY_COLORS: Record<EventCategory, string> = {
-  military: '#ef4444',
-  economy: '#f59e0b',
-  trade: '#3b9be8',
-  health: '#00cc80',
+  military: '#ff3333',
+  economy: '#ffaa00',
+  trade: '#00cc33',
+  health: '#00ff41',
   disaster: '#ff6b35',
-  political: '#a855f7',
+  political: '#00aa2a',
 };
 
 const SEVERITY_SIZE: Record<string, number> = {
