@@ -89,6 +89,14 @@ export function useOSINTFeeds() {
     await Promise.allSettled([fetchOpenSky(), fetchEarthquakes(), fetchFIRMS(), fetchGDACS()]);
   }, [fetchOpenSky, fetchEarthquakes, fetchFIRMS, fetchGDACS]);
 
+  // Auto-fetch all feeds on mount
+  const hasFetched = useRef(false);
+  useEffect(() => {
+    if (hasFetched.current) return;
+    hasFetched.current = true;
+    fetchAll();
+  }, [fetchAll]);
+
   return {
     feedStatus,
     fetchOpenSky,
