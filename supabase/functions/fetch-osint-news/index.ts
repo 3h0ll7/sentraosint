@@ -35,21 +35,30 @@ serve(async (req) => {
 
     const allArticles: { article: GdeltArticle; queryCategory: string }[] = [];
 
-    // Fetch from GDELT DOC API for each category
-    for (const q of OSINT_QUERIES) {
+    // Fetch from GDELT DOC API for each category (sequential with delays to avoid 429)
+    for (let qi = 0; qi < OSINT_QUERIES.length; qi++) {
+      const q = OSINT_QUERIES[qi];
       try {
-        const gdeltUrl = `https://api.gdeltproject.org/api/v2/doc/doc?query=${encodeURIComponent(q.query)}&mode=artlist&maxrecords=10&format=json&sort=DateDesc&timespan=24h`;
+        // Add delay between requests to avoid GDELT rate limiting
+        if (qi > 0) await new Promise(r => setTimeout(r, 2000));
+
+        const gdeltUrl = `https://api.gdeltproject.org/api/v2/doc/doc?query=${encodeURIComponent(q.query)}&mode=artlist&maxrecords=5&format=json&sort=DateDesc&timespan=24h`;
         console.log(`Fetching GDELT [${q.category}]:`, gdeltUrl);
 
         const res = await fetch(gdeltUrl);
         if (!res.ok) {
+          const body = await res.text();
           console.warn(`GDELT ${q.category} error: ${res.status}`);
+          if (res.status === 429) {
+            // Wait longer and skip this category
+            await new Promise(r => setTimeout(r, 3000));
+          }
           continue;
         }
 
         const data = await res.json();
         const articles: GdeltArticle[] = data.articles || [];
-        articles.slice(0, 5).forEach(a => {
+        articles.slice(0, 3).forEach(a => {
           allArticles.push({ article: a, queryCategory: q.category });
         });
       } catch (e) {
