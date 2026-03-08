@@ -147,28 +147,28 @@ export default function OSINTMap({
           >
             <Popup className="osint-popup">
               <div style={{
-                background: '#0a0f1a', color: '#e5e7eb', padding: '10px 14px', borderRadius: '8px',
-                minWidth: '240px', fontFamily: 'JetBrains Mono, monospace', fontSize: '11px',
-                border: `1px solid ${(entity.threatScore ?? 0) > 30 ? getThreatColor(entity.threatScore ?? 0) : ICON_COLORS_DEFAULT[entity.type]}44`,
-                boxShadow: `0 0 20px ${ICON_COLORS_DEFAULT[entity.type]}11`,
+                background: '#000800', color: '#00ff41', padding: '10px 14px', borderRadius: '4px',
+                minWidth: '240px', fontFamily: "'Share Tech Mono', monospace", fontSize: '11px',
+                border: `1px solid rgba(0,255,65,0.3)`,
+                boxShadow: `0 0 20px rgba(0,255,65,0.1), inset 0 0 30px rgba(0,255,65,0.02)`,
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
                   <span style={{ fontSize: '14px' }}>{ICON_SYMBOLS[entity.type]}</span>
-                  <strong style={{ color: ICON_COLORS_DEFAULT[entity.type] }}>{entity.name}</strong>
+                  <strong style={{ color: '#00ff41', textShadow: '0 0 6px rgba(0,255,65,0.5)' }}>{entity.name}</strong>
                 </div>
-                {entity.callsign && <div><span style={{ color: '#6b7280' }}>CALLSIGN:</span> {entity.callsign}</div>}
-                <div><span style={{ color: '#6b7280' }}>CLASS:</span> <span style={{ color: entity.classification === 'military' ? '#f59e0b' : entity.classification === 'unknown' ? '#ef4444' : '#6b7280' }}>{entity.classification.toUpperCase()}</span></div>
-                {entity.altitude && <div><span style={{ color: '#6b7280' }}>ALT:</span> {entity.altitude.toLocaleString()} ft</div>}
-                {entity.speed && <div><span style={{ color: '#6b7280' }}>SPD:</span> {entity.speed} kts</div>}
-                {entity.heading !== undefined && <div><span style={{ color: '#6b7280' }}>HDG:</span> {Math.round(entity.heading)}°</div>}
+                {entity.callsign && <div><span style={{ color: '#006617' }}>CALLSIGN:</span> {entity.callsign}</div>}
+                <div><span style={{ color: '#006617' }}>CLASS:</span> <span style={{ color: entity.classification === 'military' ? '#ffaa00' : entity.classification === 'unknown' ? '#ff3333' : '#006617' }}>{entity.classification.toUpperCase()}</span></div>
+                {entity.altitude && <div><span style={{ color: '#006617' }}>ALT:</span> {entity.altitude.toLocaleString()} ft</div>}
+                {entity.speed && <div><span style={{ color: '#006617' }}>SPD:</span> {entity.speed} kts</div>}
+                {entity.heading !== undefined && <div><span style={{ color: '#006617' }}>HDG:</span> {Math.round(entity.heading)}°</div>}
                 {entity.threatScore !== undefined && entity.threatScore > 0 && (
-                  <div style={{ marginTop: '6px', padding: '4px 0', borderTop: '1px solid #1f2937' }}>
-                    <span style={{ color: '#6b7280' }}>THREAT:</span>{' '}
+                  <div style={{ marginTop: '6px', padding: '4px 0', borderTop: '1px solid rgba(0,255,65,0.15)' }}>
+                    <span style={{ color: '#006617' }}>THREAT:</span>{' '}
                     <span style={{ color: getThreatColor(entity.threatScore), fontWeight: 'bold' }}>{entity.threatScore}/100</span>
                   </div>
                 )}
-                <div style={{ marginTop: '4px', color: '#9ca3af', fontSize: '10px' }}>{entity.details}</div>
-                <div style={{ marginTop: '4px', color: '#6b7280', fontSize: '9px' }}>SRC: {entity.source}</div>
+                <div style={{ marginTop: '4px', color: '#00aa2a', fontSize: '10px' }}>{entity.details}</div>
+                <div style={{ marginTop: '4px', color: '#006617', fontSize: '9px' }}>SRC: {entity.source}</div>
               </div>
             </Popup>
           </Marker>
