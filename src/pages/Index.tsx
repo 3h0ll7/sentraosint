@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Radar, Radio, ChevronLeft, ChevronRight, RefreshCw, Wifi, WifiOff, Route, Link2, Grid3x3, Globe } from 'lucide-react';
+import { Radar, Radio, ChevronLeft, ChevronRight, RefreshCw, Wifi, WifiOff, Route, Link2, Grid3x3, Globe, Thermometer } from 'lucide-react';
 import MatrixRain from '@/components/MatrixRain';
 import OSINTMap from '@/components/OSINTMap';
 import LayerControl from '@/components/LayerControl';
@@ -13,9 +13,11 @@ import StatsBar from '@/components/StatsBar';
 import SearchBar from '@/components/SearchBar';
 import EntityDetail from '@/components/EntityDetail';
 import TimelineControl from '@/components/TimelineControl';
+import RiskLegend from '@/components/RiskLegend';
 import { useOSINTData } from '@/hooks/useOSINTData';
 import { useGlobalEvents, EventCategory } from '@/hooks/useGlobalEvents';
 import { EntityType, MapEntity } from '@/data/mockData';
+import { calculateRiskHeatmap } from '@/data/riskEngine';
 
 export default function Index() {
   const {
@@ -41,6 +43,7 @@ export default function Index() {
   const [selectedEntity, setSelectedEntity] = useState<MapEntity | null>(null);
   const [showGrid, setShowGrid] = useState(true);
   const [showGlobalEvents, setShowGlobalEvents] = useState(true);
+  const [showRiskHeatmap, setShowRiskHeatmap] = useState(false);
   const [visibleLayers, setVisibleLayers] = useState<Record<EntityType, boolean>>({
     aircraft: true,
     ship: true,
@@ -60,6 +63,11 @@ export default function Index() {
     allEvents.forEach(e => { counts[e.category] = (counts[e.category] || 0) + 1; });
     return counts;
   }, [allEvents]);
+
+  const riskPoints = useMemo(
+    () => calculateRiskHeatmap(entities, allEvents),
+    [entities, allEvents]
+  );
 
   const toggleLayer = (layer: EntityType) => {
     setVisibleLayers(prev => ({ ...prev, [layer]: !prev[layer] }));
@@ -101,6 +109,10 @@ export default function Index() {
             icon={<Globe className="w-3 h-3" />} label="EVENTS"
             activeClass="bg-accent/10 text-accent border-accent/30"
           />
+          <HeaderBtn active={showRiskHeatmap} onClick={() => setShowRiskHeatmap(!showRiskHeatmap)}
+            icon={<Thermometer className="w-3 h-3" />} label="RISK"
+            activeClass="bg-alert/10 text-alert border-alert/30"
+          />
           <HeaderBtn active={showGrid} onClick={() => setShowGrid(!showGrid)}
             icon={<Grid3x3 className="w-3 h-3" />} label="GRID"
             activeClass="bg-muted-foreground/10 text-muted-foreground border-muted-foreground/30"
@@ -138,9 +150,9 @@ export default function Index() {
             showLinks={showLinks}
             globalEvents={globalEvents}
             showGlobalEvents={showGlobalEvents}
+            riskPoints={riskPoints}
+            showRiskHeatmap={showRiskHeatmap}
           />
-
-          {/* Grid + Scanline overlay */}
           {showGrid && <div className="absolute inset-0 grid-bg pointer-events-none z-[400] opacity-30" />}
           <div className="absolute inset-0 scanline pointer-events-none z-[401]" />
 
@@ -202,6 +214,12 @@ export default function Index() {
                 <Section title="GLOBAL EVENT LAYERS" badge={allEvents.length}>
                   <EventLayerControl visibleCategories={visibleCategories} onToggle={toggleCategory} counts={eventCategoryCounts} />
                 </Section>
+
+                {showRiskHeatmap && (
+                  <Section title="RISK HEATMAP" badge={riskPoints.filter(p => p.score >= 60).length}>
+                    <RiskLegend riskPoints={riskPoints} />
+                  </Section>
+                )}
 
                 <Section title="BREAKING NEWS" badge={allEvents.filter(e => e.is_breaking).length}>
                   <BreakingNewsPanel events={globalEvents} />
