@@ -5,3 +5,15 @@ verify_jwt = false
 
 [functions.classify-event]
 verify_jwt = false
+
+[functions.fetch-osint-news]
+verify_jwt = false
+
+[functions.fetch-opensky]
+verify_jwt = false
+
+[functions.fetch-firms]
+verify_jwt = false
+
+[functions.fetch-gdacs]
+verify_jwt = false
