@@ -73,7 +73,7 @@ serve(async (req) => {
         lng: f.lng,
         url: "https://firms.modaps.eosdis.nasa.gov/map/",
         raw_data: f,
-        is_breaking: f.frp >= 300,
+        is_breaking: false,
       };
     });
 
