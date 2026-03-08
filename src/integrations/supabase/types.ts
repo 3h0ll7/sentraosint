@@ -14,7 +14,128 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      alerts: {
+        Row: {
+          created_at: string
+          description: string
+          entity_ids: string[] | null
+          id: string
+          severity: Database["public"]["Enums"]["alert_severity"]
+          title: string
+          type: Database["public"]["Enums"]["alert_type"]
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          entity_ids?: string[] | null
+          id: string
+          severity: Database["public"]["Enums"]["alert_severity"]
+          title: string
+          type: Database["public"]["Enums"]["alert_type"]
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          entity_ids?: string[] | null
+          id?: string
+          severity?: Database["public"]["Enums"]["alert_severity"]
+          title?: string
+          type?: Database["public"]["Enums"]["alert_type"]
+        }
+        Relationships: []
+      }
+      entities: {
+        Row: {
+          altitude: number | null
+          callsign: string | null
+          classification: Database["public"]["Enums"]["entity_classification"]
+          country: string | null
+          details: string | null
+          flag_code: string | null
+          heading: number | null
+          id: string
+          lat: number
+          lng: number
+          name: string
+          origin: string | null
+          source: string
+          speed: number | null
+          threat_score: number | null
+          type: Database["public"]["Enums"]["entity_type"]
+          updated_at: string
+        }
+        Insert: {
+          altitude?: number | null
+          callsign?: string | null
+          classification: Database["public"]["Enums"]["entity_classification"]
+          country?: string | null
+          details?: string | null
+          flag_code?: string | null
+          heading?: number | null
+          id: string
+          lat: number
+          lng: number
+          name: string
+          origin?: string | null
+          source: string
+          speed?: number | null
+          threat_score?: number | null
+          type: Database["public"]["Enums"]["entity_type"]
+          updated_at?: string
+        }
+        Update: {
+          altitude?: number | null
+          callsign?: string | null
+          classification?: Database["public"]["Enums"]["entity_classification"]
+          country?: string | null
+          details?: string | null
+          flag_code?: string | null
+          heading?: number | null
+          id?: string
+          lat?: number
+          lng?: number
+          name?: string
+          origin?: string | null
+          source?: string
+          speed?: number | null
+          threat_score?: number | null
+          type?: Database["public"]["Enums"]["entity_type"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      trail_points: {
+        Row: {
+          entity_id: string
+          id: string
+          lat: number
+          lng: number
+          recorded_at: string
+        }
+        Insert: {
+          entity_id: string
+          id?: string
+          lat: number
+          lng: number
+          recorded_at?: string
+        }
+        Update: {
+          entity_id?: string
+          id?: string
+          lat?: number
+          lng?: number
+          recorded_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trail_points_entity_id_fkey"
+            columns: ["entity_id"]
+            isOneToOne: false
+            referencedRelation: "entities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +144,10 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      alert_severity: "critical" | "high" | "medium" | "low"
+      alert_type: "cluster" | "movement" | "airspace" | "proximity"
+      entity_classification: "military" | "civilian" | "unknown"
+      entity_type: "aircraft" | "ship" | "base" | "strategic" | "alert"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +274,11 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      alert_severity: ["critical", "high", "medium", "low"],
+      alert_type: ["cluster", "movement", "airspace", "proximity"],
+      entity_classification: ["military", "civilian", "unknown"],
+      entity_type: ["aircraft", "ship", "base", "strategic", "alert"],
+    },
   },
 } as const
