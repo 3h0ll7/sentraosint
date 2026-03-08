@@ -1,8 +1,9 @@
 import { useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { Swords, TrendingDown, Ship, HeartPulse, Landmark, ExternalLink, ShieldAlert, AlertTriangle, Info } from 'lucide-react';
+import { Swords, TrendingDown, Ship, HeartPulse, Landmark, ExternalLink, ShieldAlert, AlertTriangle, Info, FileDown, FileText } from 'lucide-react';
 import { GlobalEvent, EventCategory } from '@/hooks/useGlobalEvents';
 import { getTopIntelEvents, ScoredEvent } from '@/data/eventPriorityEngine';
+import { exportIntelCSV, exportIntelPDF } from '@/utils/exportIntelReport';
 
 interface BreakingNewsPanelProps {
   events: GlobalEvent[];
