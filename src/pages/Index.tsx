@@ -19,6 +19,8 @@ import GlobalConcernsPanel from '@/components/GlobalConcernsPanel';
 import IntelligenceInsightsPanel from '@/components/IntelligenceInsightsPanel';
 import { useOSINTData } from '@/hooks/useOSINTData';
 import { useGlobalEvents, EventCategory } from '@/hooks/useGlobalEvents';
+import { useOSINTFeeds } from '@/hooks/useOSINTFeeds';
+import LiveFeedsPanel from '@/components/LiveFeedsPanel';
 import { EntityType, MapEntity } from '@/data/mockData';
 import { calculateRiskHeatmap } from '@/data/riskEngine';
 import {
@@ -48,6 +50,10 @@ export default function Index() {
     breakingAlert,
     dismissBreaking,
   } = useGlobalEvents(30000);
+
+  const {
+    feedStatus, fetchOpenSky, fetchEarthquakes, fetchFIRMS, fetchGDACS, fetchAll,
+  } = useOSINTFeeds();
 
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [selectedEntity, setSelectedEntity] = useState<MapEntity | null>(null);
@@ -241,6 +247,17 @@ export default function Index() {
                   alerts={alerts}
                   onEntitySelect={setSelectedEntity}
                 />
+
+                <TelemetrySection title="LIVE OSINT FEEDS">
+                  <LiveFeedsPanel
+                    feedStatus={feedStatus}
+                    onFetchOpenSky={fetchOpenSky}
+                    onFetchEarthquakes={fetchEarthquakes}
+                    onFetchFIRMS={fetchFIRMS}
+                    onFetchGDACS={fetchGDACS}
+                    onFetchAll={fetchAll}
+                  />
+                </TelemetrySection>
 
                 <TelemetrySection title="ENTITY TRACKING">
                   <LayerControl visibleLayers={visibleLayers} onToggle={toggleLayer} counts={layerCounts} />
