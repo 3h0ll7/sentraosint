@@ -31,6 +31,7 @@ export default function LiveFeedsPanel({
     firms: onFetchFIRMS,
     gdacs: onFetchGDACS,
     news: onFetchOSINTNews,
+    googleNews: onFetchGoogleNews,
   };
 
   return (
