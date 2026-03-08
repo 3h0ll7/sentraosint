@@ -122,6 +122,7 @@ export default function BreakingNewsPanel({ events }: BreakingNewsPanelProps) {
           </motion.div>
         );
       })}
+      </div>
     </div>
   );
 }
