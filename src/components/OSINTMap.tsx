@@ -33,11 +33,11 @@ const ICON_SYMBOLS: Record<EntityType, string> = {
 };
 
 const ICON_COLORS_DEFAULT: Record<EntityType, string> = {
-  aircraft: '#00cc80',
-  ship: '#3b9be8',
-  base: '#f59e0b',
-  strategic: '#a855f7',
-  alert: '#ef4444',
+  aircraft: '#00ff41',
+  ship: '#00cc33',
+  base: '#ffaa00',
+  strategic: '#00aa2a',
+  alert: '#ff3333',
 };
 
 function createIcon(entity: MapEntity): L.DivIcon {
