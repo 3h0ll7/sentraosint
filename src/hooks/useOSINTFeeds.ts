@@ -7,6 +7,7 @@ export interface FeedStatus {
   earthquakes: { loading: boolean; lastFetch: Date | null; count: number };
   firms: { loading: boolean; lastFetch: Date | null; count: number };
   gdacs: { loading: boolean; lastFetch: Date | null; count: number };
+  news: { loading: boolean; lastFetch: Date | null; count: number };
 }
 
 const initialStatus: FeedStatus = {
@@ -14,6 +15,7 @@ const initialStatus: FeedStatus = {
   earthquakes: { loading: false, lastFetch: null, count: 0 },
   firms: { loading: false, lastFetch: null, count: 0 },
   gdacs: { loading: false, lastFetch: null, count: 0 },
+  news: { loading: false, lastFetch: null, count: 0 },
 };
 
 export function useOSINTFeeds() {
@@ -89,9 +91,24 @@ export function useOSINTFeeds() {
     }
   }, []);
 
+  const fetchOSINTNews = useCallback(async () => {
+    updateFeed('news', { loading: true });
+    try {
+      const { data, error } = await supabase.functions.invoke('fetch-osint-news');
+      if (error) throw error;
+      updateFeed('news', { loading: false, lastFetch: new Date(), count: data.news || 0 });
+      toast.success(`OSINT News: ${data.news} intel events classified`);
+      return data;
+    } catch (e: any) {
+      updateFeed('news', { loading: false });
+      toast.error(`OSINT News fetch failed: ${e.message}`);
+      console.error('OSINT News error:', e);
+    }
+  }, []);
+
   const fetchAll = useCallback(async () => {
-    await Promise.allSettled([fetchOpenSky(), fetchEarthquakes(), fetchFIRMS(), fetchGDACS()]);
-  }, [fetchOpenSky, fetchEarthquakes, fetchFIRMS, fetchGDACS]);
+    await Promise.allSettled([fetchOpenSky(), fetchEarthquakes(), fetchFIRMS(), fetchGDACS(), fetchOSINTNews()]);
+  }, [fetchOpenSky, fetchEarthquakes, fetchFIRMS, fetchGDACS, fetchOSINTNews]);
 
   // Auto-fetch all feeds on mount
   const hasFetched = useRef(false);
@@ -109,12 +126,21 @@ export function useOSINTFeeds() {
     return () => clearInterval(interval);
   }, [fetchFIRMS]);
 
+  // Auto-refresh OSINT news every 5 minutes
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchOSINTNews();
+    }, 300000);
+    return () => clearInterval(interval);
+  }, [fetchOSINTNews]);
+
   return {
     feedStatus,
     fetchOpenSky,
     fetchEarthquakes,
     fetchFIRMS,
     fetchGDACS,
+    fetchOSINTNews,
     fetchAll,
   };
 }

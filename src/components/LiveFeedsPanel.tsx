@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Plane, Flame, AlertTriangle, Activity, RefreshCw, Loader2, Database } from 'lucide-react';
+import { Plane, Flame, AlertTriangle, Activity, RefreshCw, Loader2, Database, Newspaper } from 'lucide-react';
 import { FeedStatus } from '@/hooks/useOSINTFeeds';
 
 interface LiveFeedsPanelProps {
@@ -8,6 +8,7 @@ interface LiveFeedsPanelProps {
   onFetchEarthquakes: () => void;
   onFetchFIRMS: () => void;
   onFetchGDACS: () => void;
+  onFetchOSINTNews: () => void;
   onFetchAll: () => void;
 }
 
@@ -16,16 +17,18 @@ const FEED_CONFIG = [
   { key: 'earthquakes' as const, label: 'USGS Earthquakes', icon: Activity, source: 'USGS Real-time Feed' },
   { key: 'firms' as const, label: 'NASA Wildfires', icon: Flame, source: 'MODIS Active Fire Data' },
   { key: 'gdacs' as const, label: 'GDACS Disasters', icon: AlertTriangle, source: 'Global Disaster Alert System' },
+  { key: 'news' as const, label: 'OSINT News Intel', icon: Newspaper, source: 'GDELT Global News Analysis' },
 ];
 
 export default function LiveFeedsPanel({
-  feedStatus, onFetchOpenSky, onFetchEarthquakes, onFetchFIRMS, onFetchGDACS, onFetchAll,
+  feedStatus, onFetchOpenSky, onFetchEarthquakes, onFetchFIRMS, onFetchGDACS, onFetchOSINTNews, onFetchAll,
 }: LiveFeedsPanelProps) {
   const handlers: Record<string, () => void> = {
     opensky: onFetchOpenSky,
     earthquakes: onFetchEarthquakes,
     firms: onFetchFIRMS,
     gdacs: onFetchGDACS,
+    news: onFetchOSINTNews,
   };
 
   return (
