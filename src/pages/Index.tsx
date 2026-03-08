@@ -10,6 +10,7 @@ import ActivityFeed from '@/components/ActivityFeed';
 import BreakingNewsPanel from '@/components/BreakingNewsPanel';
 import GlobalAlertBanner from '@/components/GlobalAlertBanner';
 import StatsBar from '@/components/StatsBar';
+import SearchBar from '@/components/SearchBar';
 import EntityDetail from '@/components/EntityDetail';
 import TimelineControl from '@/components/TimelineControl';
 import { useOSINTData } from '@/hooks/useOSINTData';
@@ -187,6 +188,13 @@ export default function Index() {
               className="h-full border-l border-border bg-card overflow-hidden flex-shrink-0"
             >
               <div className="w-[320px] h-full overflow-y-auto p-3 space-y-4">
+                <SearchBar
+                  entities={entities}
+                  globalEvents={allEvents}
+                  alerts={alerts}
+                  onEntitySelect={setSelectedEntity}
+                />
+
                 <Section title="ENTITY LAYERS">
                   <LayerControl visibleLayers={visibleLayers} onToggle={toggleLayer} counts={layerCounts} />
                 </Section>
