@@ -6,22 +6,27 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-async function fetchWithRetry(url: string, maxRetries = 2): Promise<Response> {
-  for (let attempt = 0; attempt <= maxRetries; attempt++) {
-    const res = await fetch(url, { headers: { "Accept": "application/json" } });
+async function fetchWithTimeout(url: string, timeoutMs = 8000): Promise<Response | null> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+  
+  try {
+    const res = await fetch(url, { 
+      headers: { "Accept": "application/json" },
+      signal: controller.signal
+    });
+    clearTimeout(timeoutId);
+    
     if (res.status === 429) {
-      if (attempt < maxRetries) {
-        const delay = (attempt + 1) * 5000; // 5s, 10s
-        console.log(`Rate limited, waiting ${delay}ms before retry ${attempt + 1}`);
-        await new Promise(r => setTimeout(r, delay));
-        continue;
-      }
-      // All retries exhausted — return cached data instead
-      return res;
+      console.log("Rate limited by OpenSky");
+      return null; // Return null to trigger cache fallback
     }
     return res;
+  } catch (e) {
+    clearTimeout(timeoutId);
+    console.log("OpenSky fetch failed:", e instanceof Error ? e.message : "Unknown error");
+    return null; // Return null to trigger cache fallback
   }
-  throw new Error("Unreachable");
 }
 
 serve(async (req) => {
@@ -44,14 +49,13 @@ serve(async (req) => {
     const url = `https://opensky-network.org/api/states/all?lamin=${lamin}&lomin=${lomin}&lamax=${lamax}&lomax=${lomax}`;
     console.log("Fetching OpenSky:", url);
 
-    const res = await fetchWithRetry(url);
+    const res = await fetchWithTimeout(url);
 
-    // If still rate-limited after retries, return existing cached data count
-    if (res.status === 429) {
-      await res.text(); // consume body
+    // If fetch failed or timed out, return existing cached data
+    if (!res) {
       const { count } = await supabase.from("entities").select("id", { count: "exact", head: true }).like("id", "opensky-%");
-      console.log("Rate limited — serving cached data, count:", count);
-      return new Response(JSON.stringify({ tracked: count ?? 0, cached: true, message: "Rate limited — using cached data" }), {
+      console.log("API unavailable — serving cached data, count:", count);
+      return new Response(JSON.stringify({ tracked: count ?? 0, cached: true, message: "OpenSky API unavailable — using cached data" }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
