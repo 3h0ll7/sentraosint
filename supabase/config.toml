@@ -17,3 +17,6 @@ verify_jwt = false
 
 [functions.fetch-gdacs]
 verify_jwt = false
+
+[functions.fetch-google-news]
+verify_jwt = false

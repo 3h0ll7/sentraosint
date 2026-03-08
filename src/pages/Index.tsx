@@ -52,7 +52,7 @@ export default function Index() {
   } = useGlobalEvents(30000);
 
   const {
-    feedStatus, fetchOpenSky, fetchEarthquakes, fetchFIRMS, fetchGDACS, fetchOSINTNews, fetchAll,
+    feedStatus, fetchOpenSky, fetchEarthquakes, fetchFIRMS, fetchGDACS, fetchOSINTNews, fetchGoogleNews, fetchAll,
   } = useOSINTFeeds();
 
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -256,6 +256,7 @@ export default function Index() {
                     onFetchFIRMS={fetchFIRMS}
                     onFetchGDACS={fetchGDACS}
                     onFetchOSINTNews={fetchOSINTNews}
+                    onFetchGoogleNews={fetchGoogleNews}
                     onFetchAll={fetchAll}
                   />
                 </TelemetrySection>
