@@ -255,6 +255,7 @@ export default function Index() {
                     onFetchEarthquakes={fetchEarthquakes}
                     onFetchFIRMS={fetchFIRMS}
                     onFetchGDACS={fetchGDACS}
+                    onFetchOSINTNews={fetchOSINTNews}
                     onFetchAll={fetchAll}
                   />
                 </TelemetrySection>
