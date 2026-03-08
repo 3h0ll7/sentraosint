@@ -161,10 +161,14 @@ export default function OSINTMap({
         <GlobalEventLayer events={globalEvents} visible={showGlobalEvents} />
         <RiskHeatmapLayer riskPoints={riskPoints} visible={showRiskHeatmap} />
         <ImpactWaveLayer events={globalEvents} visible={showImpactWaves} />
-        {filteredEntities.map(entity => (
+        {filteredEntities.map(entity => {
+          const interpEntity = entity as InterpolatedEntity;
+          const lat = interpEntity.interpolatedLat ?? entity.lat;
+          const lng = interpEntity.interpolatedLng ?? entity.lng;
+          return (
           <Marker
             key={entity.id}
-            position={[entity.lat, entity.lng]}
+            position={[lat, lng]}
             icon={createIcon(entity)}
             eventHandlers={{ click: () => onEntitySelect?.(entity) }}
           >
