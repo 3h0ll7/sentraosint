@@ -1,6 +1,5 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { getSimulatedGlobalEvents, SimulatedGlobalEvent } from '@/data/simulatedEvents';
 
 export interface GlobalEvent {
   id: string;
@@ -38,40 +37,7 @@ export function useGlobalEvents(refreshInterval = 30000) {
 
   const dismissBreaking = useCallback(() => setBreakingAlert(null), []);
 
-  // Seed simulated events into the database
-  const seedSimulated = useCallback(async () => {
-    try {
-      const simulated = getSimulatedGlobalEvents();
-      // Delete old simulated (non-USGS) events
-      await supabase.from('global_events').delete().neq('source', 'USGS');
-
-      const rows = simulated.map(e => ({
-        category: e.category,
-        severity: e.severity,
-        title: e.title,
-        description: e.description,
-        source: e.source,
-        country: e.country,
-        lat: e.lat,
-        lng: e.lng,
-        is_breaking: e.is_breaking,
-      }));
-      await supabase.from('global_events').insert(rows);
-    } catch (err) {
-      console.error('Seed simulated events error:', err);
-    }
-  }, []);
-
-  // Fetch USGS earthquakes via edge function
-  const fetchEarthquakes = useCallback(async () => {
-    try {
-      await supabase.functions.invoke('fetch-earthquakes');
-    } catch (err) {
-      console.error('Fetch earthquakes error:', err);
-    }
-  }, []);
-
-  // Load all events from DB
+  // Load all events from DB — only real, verified data
   const loadEvents = useCallback(async () => {
     const { data, error } = await supabase
       .from('global_events')
@@ -105,22 +71,22 @@ export function useGlobalEvents(refreshInterval = 30000) {
     }
   }, []);
 
-  // Initial load
+  // Fetch USGS earthquakes via edge function
+  const fetchEarthquakes = useCallback(async () => {
+    try {
+      await supabase.functions.invoke('fetch-earthquakes');
+    } catch (err) {
+      console.error('Fetch earthquakes error:', err);
+    }
+  }, []);
+
+  // Initial load — no simulated data, only DB
   useEffect(() => {
-    const init = async () => {
-      await seedSimulated();
-      await fetchEarthquakes();
-      await loadEvents();
-    };
-    init();
+    loadEvents();
 
-    const interval = setInterval(async () => {
-      await seedSimulated();
-      await loadEvents();
-    }, refreshInterval);
-
+    const interval = setInterval(loadEvents, refreshInterval);
     return () => clearInterval(interval);
-  }, [seedSimulated, fetchEarthquakes, loadEvents, refreshInterval]);
+  }, [loadEvents, refreshInterval]);
 
   // Realtime subscription
   useEffect(() => {

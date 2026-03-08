@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -88,6 +88,14 @@ export function useOSINTFeeds() {
   const fetchAll = useCallback(async () => {
     await Promise.allSettled([fetchOpenSky(), fetchEarthquakes(), fetchFIRMS(), fetchGDACS()]);
   }, [fetchOpenSky, fetchEarthquakes, fetchFIRMS, fetchGDACS]);
+
+  // Auto-fetch all feeds on mount
+  const hasFetched = useRef(false);
+  useEffect(() => {
+    if (hasFetched.current) return;
+    hasFetched.current = true;
+    fetchAll();
+  }, [fetchAll]);
 
   return {
     feedStatus,
