@@ -10,6 +10,7 @@ import ActivityFeed from '@/components/ActivityFeed';
 import BreakingNewsPanel from '@/components/BreakingNewsPanel';
 import GlobalAlertBanner from '@/components/GlobalAlertBanner';
 import StatsBar from '@/components/StatsBar';
+import SearchBar from '@/components/SearchBar';
 import EntityDetail from '@/components/EntityDetail';
 import TimelineControl from '@/components/TimelineControl';
 import { useOSINTData } from '@/hooks/useOSINTData';
