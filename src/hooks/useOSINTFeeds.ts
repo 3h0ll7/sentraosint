@@ -7,6 +7,7 @@ export interface FeedStatus {
   earthquakes: { loading: boolean; lastFetch: Date | null; count: number };
   firms: { loading: boolean; lastFetch: Date | null; count: number };
   gdacs: { loading: boolean; lastFetch: Date | null; count: number };
+  news: { loading: boolean; lastFetch: Date | null; count: number };
 }
 
 const initialStatus: FeedStatus = {
@@ -14,6 +15,7 @@ const initialStatus: FeedStatus = {
   earthquakes: { loading: false, lastFetch: null, count: 0 },
   firms: { loading: false, lastFetch: null, count: 0 },
   gdacs: { loading: false, lastFetch: null, count: 0 },
+  news: { loading: false, lastFetch: null, count: 0 },
 };
 
 export function useOSINTFeeds() {
