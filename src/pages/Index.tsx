@@ -109,6 +109,10 @@ export default function Index() {
             icon={<Globe className="w-3 h-3" />} label="EVENTS"
             activeClass="bg-accent/10 text-accent border-accent/30"
           />
+          <HeaderBtn active={showRiskHeatmap} onClick={() => setShowRiskHeatmap(!showRiskHeatmap)}
+            icon={<Thermometer className="w-3 h-3" />} label="RISK"
+            activeClass="bg-alert/10 text-alert border-alert/30"
+          />
           <HeaderBtn active={showGrid} onClick={() => setShowGrid(!showGrid)}
             icon={<Grid3x3 className="w-3 h-3" />} label="GRID"
             activeClass="bg-muted-foreground/10 text-muted-foreground border-muted-foreground/30"
@@ -146,9 +150,9 @@ export default function Index() {
             showLinks={showLinks}
             globalEvents={globalEvents}
             showGlobalEvents={showGlobalEvents}
+            riskPoints={riskPoints}
+            showRiskHeatmap={showRiskHeatmap}
           />
-
-          {/* Grid + Scanline overlay */}
           {showGrid && <div className="absolute inset-0 grid-bg pointer-events-none z-[400] opacity-30" />}
           <div className="absolute inset-0 scanline pointer-events-none z-[401]" />
 
