@@ -31,7 +31,11 @@ export function useOSINTFeeds() {
       });
       if (error) throw error;
       updateFeed('opensky', { loading: false, lastFetch: new Date(), count: data.tracked || 0 });
-      toast.success(`OpenSky: ${data.tracked} aircraft tracked`);
+      if (data.cached) {
+        toast.info(`OpenSky: serving ${data.tracked} cached aircraft (rate limited)`);
+      } else {
+        toast.success(`OpenSky: ${data.tracked} aircraft tracked`);
+      }
       return data;
     } catch (e: any) {
       updateFeed('opensky', { loading: false });
