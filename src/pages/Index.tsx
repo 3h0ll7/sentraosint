@@ -20,6 +20,7 @@ import IntelligenceInsightsPanel from '@/components/IntelligenceInsightsPanel';
 import { useOSINTData } from '@/hooks/useOSINTData';
 import { useGlobalEvents, EventCategory } from '@/hooks/useGlobalEvents';
 import { useOSINTFeeds } from '@/hooks/useOSINTFeeds';
+import { useEntityInterpolation } from '@/hooks/useEntityInterpolation';
 import LiveFeedsPanel from '@/components/LiveFeedsPanel';
 import { EntityType, MapEntity } from '@/data/mockData';
 import { calculateRiskHeatmap } from '@/data/riskEngine';
