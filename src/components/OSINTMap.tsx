@@ -7,6 +7,7 @@ import TrailLayer from '@/components/TrailLayer';
 import LinkLayer from '@/components/LinkLayer';
 import GlobalEventLayer from '@/components/GlobalEventLayer';
 import RiskHeatmapLayer from '@/components/RiskHeatmapLayer';
+import ImpactWaveLayer from '@/components/ImpactWaveLayer';
 import { TrailHistory } from '@/hooks/useOSINTData';
 import { getThreatColor, LinkConnection } from '@/data/threatEngine';
 import MapStyleSelector, { MapStyle, getTileUrls } from '@/components/MapStyleSelector';
@@ -26,6 +27,8 @@ interface OSINTMapProps {
   showGlobalEvents?: boolean;
   riskPoints?: RiskPoint[];
   showRiskHeatmap?: boolean;
+  showImpactWaves?: boolean;
+  flyToTarget?: { lat: number; lng: number } | null;
 }
 
 const ICON_SYMBOLS: Record<EntityType, string> = {
@@ -115,6 +118,7 @@ export default function OSINTMap({
   trails, showTrails, links, showLinks,
   globalEvents = [], showGlobalEvents = true,
   riskPoints = [], showRiskHeatmap = false,
+  showImpactWaves = true, flyToTarget = null,
 }: OSINTMapProps) {
   const [mapStyle, setMapStyle] = useState<MapStyle>('dark');
 
@@ -140,10 +144,12 @@ export default function OSINTMap({
       >
         <MapTiles style={mapStyle} />
         <FlyToEntity entity={selectedEntity ?? null} />
+        <FlyToCoords target={flyToTarget} />
         <TrailLayer trails={trails} visible={showTrails} entityTypes={entityTypes} />
         <LinkLayer links={links} visible={showLinks} />
         <GlobalEventLayer events={globalEvents} visible={showGlobalEvents} />
         <RiskHeatmapLayer riskPoints={riskPoints} visible={showRiskHeatmap} />
+        <ImpactWaveLayer events={globalEvents} visible={showImpactWaves} />
         {filteredEntities.map(entity => (
           <Marker
             key={entity.id}
