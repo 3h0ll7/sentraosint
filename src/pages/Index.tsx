@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Radar, Radio, ChevronLeft, ChevronRight, RefreshCw, Wifi, WifiOff, Route, Link2, Grid3x3, Globe } from 'lucide-react';
+import { Radar, Radio, ChevronLeft, ChevronRight, RefreshCw, Wifi, WifiOff, Route, Link2, Grid3x3, Globe, Thermometer } from 'lucide-react';
 import MatrixRain from '@/components/MatrixRain';
 import OSINTMap from '@/components/OSINTMap';
 import LayerControl from '@/components/LayerControl';
@@ -13,9 +13,11 @@ import StatsBar from '@/components/StatsBar';
 import SearchBar from '@/components/SearchBar';
 import EntityDetail from '@/components/EntityDetail';
 import TimelineControl from '@/components/TimelineControl';
+import RiskLegend from '@/components/RiskLegend';
 import { useOSINTData } from '@/hooks/useOSINTData';
 import { useGlobalEvents, EventCategory } from '@/hooks/useGlobalEvents';
 import { EntityType, MapEntity } from '@/data/mockData';
+import { calculateRiskHeatmap } from '@/data/riskEngine';
 
 export default function Index() {
   const {
@@ -41,6 +43,7 @@ export default function Index() {
   const [selectedEntity, setSelectedEntity] = useState<MapEntity | null>(null);
   const [showGrid, setShowGrid] = useState(true);
   const [showGlobalEvents, setShowGlobalEvents] = useState(true);
+  const [showRiskHeatmap, setShowRiskHeatmap] = useState(false);
   const [visibleLayers, setVisibleLayers] = useState<Record<EntityType, boolean>>({
     aircraft: true,
     ship: true,
@@ -60,6 +63,11 @@ export default function Index() {
     allEvents.forEach(e => { counts[e.category] = (counts[e.category] || 0) + 1; });
     return counts;
   }, [allEvents]);
+
+  const riskPoints = useMemo(
+    () => calculateRiskHeatmap(entities, allEvents),
+    [entities, allEvents]
+  );
 
   const toggleLayer = (layer: EntityType) => {
     setVisibleLayers(prev => ({ ...prev, [layer]: !prev[layer] }));
