@@ -239,3 +239,14 @@
 ::-webkit-scrollbar-thumb:hover {
   background: hsl(120 100% 45% / 0.5);
 }
+
+/* Impact wave animations */
+@keyframes impact-pulse {
+  0% { opacity: 0.4; transform: scale(1); }
+  50% { opacity: 0.2; transform: scale(1.05); }
+  100% { opacity: 0.4; transform: scale(1); }
+}
+
+.impact-wave-0 { animation: impact-pulse 2s ease-in-out infinite; }
+.impact-wave-1 { animation: impact-pulse 2.5s ease-in-out 0.5s infinite; }
+.impact-wave-2 { animation: impact-pulse 3s ease-in-out 1s infinite; }

@@ -1,6 +1,6 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Radar, Radio, ChevronLeft, ChevronRight, RefreshCw, Wifi, WifiOff, Route, Link2, Grid3x3, Globe, Thermometer } from 'lucide-react';
+import { Radar, Radio, ChevronLeft, ChevronRight, RefreshCw, Wifi, WifiOff, Route, Link2, Grid3x3, Globe, Thermometer, Crosshair, Brain, Waves } from 'lucide-react';
 import MatrixRain from '@/components/MatrixRain';
 import OSINTMap from '@/components/OSINTMap';
 import LayerControl from '@/components/LayerControl';
@@ -14,10 +14,20 @@ import SearchBar from '@/components/SearchBar';
 import EntityDetail from '@/components/EntityDetail';
 import TimelineControl from '@/components/TimelineControl';
 import RiskLegend from '@/components/RiskLegend';
+import StabilityIndicator from '@/components/StabilityIndicator';
+import GlobalConcernsPanel from '@/components/GlobalConcernsPanel';
+import IntelligenceInsightsPanel from '@/components/IntelligenceInsightsPanel';
 import { useOSINTData } from '@/hooks/useOSINTData';
 import { useGlobalEvents, EventCategory } from '@/hooks/useGlobalEvents';
 import { EntityType, MapEntity } from '@/data/mockData';
 import { calculateRiskHeatmap } from '@/data/riskEngine';
+import {
+  calculateStabilityIndex,
+  findHottestRegion,
+  analyzeGlobalConcerns,
+  detectCorrelations,
+  detectPatterns,
+} from '@/data/intelligenceEngine';
 
 export default function Index() {
   const {
@@ -44,6 +54,8 @@ export default function Index() {
   const [showGrid, setShowGrid] = useState(true);
   const [showGlobalEvents, setShowGlobalEvents] = useState(true);
   const [showRiskHeatmap, setShowRiskHeatmap] = useState(false);
+  const [showImpactWaves, setShowImpactWaves] = useState(true);
+  const [flyToTarget, setFlyToTarget] = useState<{ lat: number; lng: number } | null>(null);
   const [visibleLayers, setVisibleLayers] = useState<Record<EntityType, boolean>>({
     aircraft: true,
     ship: true,
@@ -64,21 +76,28 @@ export default function Index() {
     return counts;
   }, [allEvents]);
 
-  const riskPoints = useMemo(
-    () => calculateRiskHeatmap(entities, allEvents),
-    [entities, allEvents]
-  );
+  const riskPoints = useMemo(() => calculateRiskHeatmap(entities, allEvents), [entities, allEvents]);
+  const stability = useMemo(() => calculateStabilityIndex(entities, allEvents), [entities, allEvents]);
+  const concerns = useMemo(() => analyzeGlobalConcerns(allEvents), [allEvents]);
+  const correlations = useMemo(() => detectCorrelations(entities, allEvents, links), [entities, allEvents, links]);
+  const patterns = useMemo(() => detectPatterns(entities, allEvents), [entities, allEvents]);
+  const hottestRegion = useMemo(() => findHottestRegion(entities, allEvents), [entities, allEvents]);
 
   const toggleLayer = (layer: EntityType) => {
     setVisibleLayers(prev => ({ ...prev, [layer]: !prev[layer] }));
   };
 
+  const focusHottestRegion = useCallback(() => {
+    if (hottestRegion) {
+      setFlyToTarget({ lat: hottestRegion.lat, lng: hottestRegion.lng });
+      // Reset after animation
+      setTimeout(() => setFlyToTarget(null), 3000);
+    }
+  }, [hottestRegion]);
+
   return (
     <div className="h-screen w-screen flex flex-col overflow-hidden bg-background relative">
-      {/* Matrix Rain Background */}
       <MatrixRain />
-
-      {/* Breaking Alert Banner */}
       <GlobalAlertBanner alert={breakingAlert} onDismiss={dismissBreaking} />
 
       {/* Header */}
@@ -88,11 +107,9 @@ export default function Index() {
             <Radar className="w-5 h-5 text-primary animate-glow-pulse" />
             <h1 className="text-sm font-bold font-mono tracking-[0.2em] text-primary matrix-glow">OSINT OVERWATCH</h1>
           </div>
-          <span className="text-[9px] font-mono text-primary/60 px-1.5 py-0.5 rounded bg-primary/5 border border-primary/20">
-            GLOBAL INTELLIGENCE
-          </span>
+          <StabilityIndicator stability={stability} />
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
           <HeaderBtn active={isLive} onClick={() => setIsLive(!isLive)}
             icon={isLive ? <Wifi className="w-3 h-3" /> : <WifiOff className="w-3 h-3" />}
             label={isLive ? 'LIVE' : 'PAUSED'} activeClass="bg-primary/10 text-primary border-primary/30"
@@ -109,6 +126,10 @@ export default function Index() {
             icon={<Globe className="w-3 h-3" />} label="EVENTS"
             activeClass="bg-accent/10 text-accent border-accent/30"
           />
+          <HeaderBtn active={showImpactWaves} onClick={() => setShowImpactWaves(!showImpactWaves)}
+            icon={<Waves className="w-3 h-3" />} label="WAVES"
+            activeClass="bg-destructive/10 text-destructive border-destructive/30"
+          />
           <HeaderBtn active={showRiskHeatmap} onClick={() => setShowRiskHeatmap(!showRiskHeatmap)}
             icon={<Thermometer className="w-3 h-3" />} label="RISK"
             activeClass="bg-alert/10 text-alert border-alert/30"
@@ -117,6 +138,14 @@ export default function Index() {
             icon={<Grid3x3 className="w-3 h-3" />} label="GRID"
             activeClass="bg-muted-foreground/10 text-muted-foreground border-muted-foreground/30"
           />
+          <button
+            onClick={focusHottestRegion}
+            className="flex items-center gap-1.5 px-2 py-1 rounded text-[10px] font-mono text-alert bg-alert/10 border border-alert/30 hover:bg-alert/20 transition-all"
+            title="Focus on hottest region"
+          >
+            <Crosshair className="w-3 h-3" />
+            HOTSPOT
+          </button>
           <button
             onClick={refresh}
             className="flex items-center gap-1.5 px-2 py-1 rounded text-[10px] font-mono text-muted-foreground hover:text-foreground bg-secondary border border-border transition-all"
@@ -132,12 +161,10 @@ export default function Index() {
         </div>
       </header>
 
-      {/* Stats Bar */}
       <StatsBar stats={stats} globalEventCount={allEvents.length} />
 
       {/* Main Content */}
       <div className="flex flex-1 overflow-hidden relative">
-        {/* Map */}
         <div className="flex-1 relative">
           <OSINTMap
             entities={entities}
@@ -152,24 +179,20 @@ export default function Index() {
             showGlobalEvents={showGlobalEvents}
             riskPoints={riskPoints}
             showRiskHeatmap={showRiskHeatmap}
+            showImpactWaves={showImpactWaves}
+            flyToTarget={flyToTarget}
           />
           {showGrid && <div className="absolute inset-0 grid-bg pointer-events-none z-[400] opacity-30" />}
           <div className="absolute inset-0 scanline pointer-events-none z-[401]" />
 
-          {/* Entity Detail Overlay */}
           <AnimatePresence>
             {selectedEntity && (
               <div className="absolute bottom-16 left-4 z-[500] w-80">
-                <EntityDetail
-                  entity={selectedEntity}
-                  onClose={() => setSelectedEntity(null)}
-                  trails={trails}
-                />
+                <EntityDetail entity={selectedEntity} onClose={() => setSelectedEntity(null)} trails={trails} />
               </div>
             )}
           </AnimatePresence>
 
-          {/* Timeline Control */}
           <TimelineControl
             isPlaying={isReplayPlaying}
             onTogglePlay={() => setIsReplayPlaying(!isReplayPlaying)}
@@ -218,6 +241,16 @@ export default function Index() {
                 {showRiskHeatmap && (
                   <Section title="RISK HEATMAP" badge={riskPoints.filter(p => p.score >= 60).length}>
                     <RiskLegend riskPoints={riskPoints} />
+                  </Section>
+                )}
+
+                <Section title="🌍 GLOBAL CONCERNS">
+                  <GlobalConcernsPanel concerns={concerns} />
+                </Section>
+
+                {(correlations.length > 0 || patterns.length > 0) && (
+                  <Section title="🧠 AI INSIGHTS" badge={correlations.length + patterns.length}>
+                    <IntelligenceInsightsPanel correlations={correlations} patterns={patterns} />
                   </Section>
                 )}
 
