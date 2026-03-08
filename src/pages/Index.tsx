@@ -20,6 +20,7 @@ import IntelligenceInsightsPanel from '@/components/IntelligenceInsightsPanel';
 import { useOSINTData } from '@/hooks/useOSINTData';
 import { useGlobalEvents, EventCategory } from '@/hooks/useGlobalEvents';
 import { useOSINTFeeds } from '@/hooks/useOSINTFeeds';
+import { useEntityInterpolation } from '@/hooks/useEntityInterpolation';
 import LiveFeedsPanel from '@/components/LiveFeedsPanel';
 import { EntityType, MapEntity } from '@/data/mockData';
 import { calculateRiskHeatmap } from '@/data/riskEngine';
@@ -40,7 +41,10 @@ export default function Index() {
     timelinePosition, setTimelinePosition,
     isReplayPlaying, setIsReplayPlaying,
     replaySpeed, setReplaySpeed,
-  } = useOSINTData(5000);
+  } = useOSINTData(45000);
+
+  // Smooth interpolation of aircraft/ship positions between API updates
+  const interpolatedEntities = useEntityInterpolation(entities);
 
   const {
     events: globalEvents,
@@ -185,7 +189,7 @@ export default function Index() {
       <div className="flex flex-1 overflow-hidden relative">
         <div className="flex-1 relative">
           <OSINTMap
-            entities={entities}
+            entities={interpolatedEntities}
             visibleLayers={visibleLayers}
             onEntitySelect={setSelectedEntity}
             selectedEntity={selectedEntity}

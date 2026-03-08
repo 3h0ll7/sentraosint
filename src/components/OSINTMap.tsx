@@ -2,6 +2,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { MapEntity, EntityType } from '@/data/mockData';
+import { InterpolatedEntity } from '@/hooks/useEntityInterpolation';
 import { useEffect, useMemo, useState } from 'react';
 import TrailLayer from '@/components/TrailLayer';
 import LinkLayer from '@/components/LinkLayer';
@@ -15,7 +16,7 @@ import { GlobalEvent } from '@/hooks/useGlobalEvents';
 import { RiskPoint } from '@/data/riskEngine';
 
 interface OSINTMapProps {
-  entities: MapEntity[];
+  entities: (MapEntity | InterpolatedEntity)[];
   visibleLayers: Record<EntityType, boolean>;
   onEntitySelect?: (entity: MapEntity) => void;
   selectedEntity?: MapEntity | null;
@@ -160,10 +161,14 @@ export default function OSINTMap({
         <GlobalEventLayer events={globalEvents} visible={showGlobalEvents} />
         <RiskHeatmapLayer riskPoints={riskPoints} visible={showRiskHeatmap} />
         <ImpactWaveLayer events={globalEvents} visible={showImpactWaves} />
-        {filteredEntities.map(entity => (
+        {filteredEntities.map(entity => {
+          const interpEntity = entity as InterpolatedEntity;
+          const lat = interpEntity.interpolatedLat ?? entity.lat;
+          const lng = interpEntity.interpolatedLng ?? entity.lng;
+          return (
           <Marker
             key={entity.id}
-            position={[entity.lat, entity.lng]}
+            position={[lat, lng]}
             icon={createIcon(entity)}
             eventHandlers={{ click: () => onEntitySelect?.(entity) }}
           >
@@ -195,7 +200,8 @@ export default function OSINTMap({
               </div>
             </Popup>
           </Marker>
-        ))}
+          );
+        })}
       </MapContainer>
       <MapStyleSelector currentStyle={mapStyle} onStyleChange={setMapStyle} />
     </div>
