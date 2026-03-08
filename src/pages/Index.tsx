@@ -215,6 +215,12 @@ export default function Index() {
                   <EventLayerControl visibleCategories={visibleCategories} onToggle={toggleCategory} counts={eventCategoryCounts} />
                 </Section>
 
+                {showRiskHeatmap && (
+                  <Section title="RISK HEATMAP" badge={riskPoints.filter(p => p.score >= 60).length}>
+                    <RiskLegend riskPoints={riskPoints} />
+                  </Section>
+                )}
+
                 <Section title="BREAKING NEWS" badge={allEvents.filter(e => e.is_breaking).length}>
                   <BreakingNewsPanel events={globalEvents} />
                 </Section>
