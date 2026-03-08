@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Plane, Flame, AlertTriangle, Activity, RefreshCw, Loader2, Database, Newspaper } from 'lucide-react';
+import { Plane, Flame, AlertTriangle, Activity, RefreshCw, Loader2, Database, Newspaper, Rss } from 'lucide-react';
 import { FeedStatus } from '@/hooks/useOSINTFeeds';
 
 interface LiveFeedsPanelProps {
@@ -9,6 +9,7 @@ interface LiveFeedsPanelProps {
   onFetchFIRMS: () => void;
   onFetchGDACS: () => void;
   onFetchOSINTNews: () => void;
+  onFetchGoogleNews: () => void;
   onFetchAll: () => void;
 }
 
