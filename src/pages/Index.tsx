@@ -300,6 +300,15 @@ export default function Index() {
   );
 }
 
+const OPS_COLOR_MAP: Record<string, string> = {
+  primary: 'bg-primary/10 text-primary border-primary/25',
+  accent: 'bg-accent/10 text-accent border-accent/25',
+  strategic: 'bg-strategic/10 text-strategic border-strategic/25',
+  destructive: 'bg-destructive/10 text-destructive border-destructive/25',
+  alert: 'bg-alert/10 text-alert border-alert/25',
+  'muted-foreground': 'bg-muted/20 text-muted-foreground border-muted-foreground/25',
+};
+
 function OpsBtn({ active, onClick, icon, label, color }: {
   active: boolean; onClick: () => void; icon: React.ReactNode; label: string; color: string;
 }) {
@@ -308,7 +317,7 @@ function OpsBtn({ active, onClick, icon, label, color }: {
       onClick={onClick}
       className={`flex items-center gap-1 px-2 py-1 rounded text-[9px] font-display font-bold tracking-wider transition-all border ${
         active
-          ? `bg-${color}/10 text-${color} border-${color}/25`
+          ? OPS_COLOR_MAP[color] || 'bg-primary/10 text-primary border-primary/25'
           : 'bg-secondary text-muted-foreground border-border'
       }`}
     >
