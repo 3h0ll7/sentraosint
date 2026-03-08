@@ -104,6 +104,54 @@ export type Database = {
         }
         Relationships: []
       }
+      global_events: {
+        Row: {
+          category: Database["public"]["Enums"]["event_category"]
+          country: string | null
+          created_at: string
+          description: string | null
+          id: string
+          is_breaking: boolean | null
+          lat: number | null
+          lng: number | null
+          raw_data: Json | null
+          severity: Database["public"]["Enums"]["alert_severity"]
+          source: string | null
+          title: string
+          url: string | null
+        }
+        Insert: {
+          category: Database["public"]["Enums"]["event_category"]
+          country?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_breaking?: boolean | null
+          lat?: number | null
+          lng?: number | null
+          raw_data?: Json | null
+          severity?: Database["public"]["Enums"]["alert_severity"]
+          source?: string | null
+          title: string
+          url?: string | null
+        }
+        Update: {
+          category?: Database["public"]["Enums"]["event_category"]
+          country?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_breaking?: boolean | null
+          lat?: number | null
+          lng?: number | null
+          raw_data?: Json | null
+          severity?: Database["public"]["Enums"]["alert_severity"]
+          source?: string | null
+          title?: string
+          url?: string | null
+        }
+        Relationships: []
+      }
       trail_points: {
         Row: {
           entity_id: string
@@ -148,6 +196,13 @@ export type Database = {
       alert_type: "cluster" | "movement" | "airspace" | "proximity"
       entity_classification: "military" | "civilian" | "unknown"
       entity_type: "aircraft" | "ship" | "base" | "strategic" | "alert"
+      event_category:
+        | "military"
+        | "economy"
+        | "trade"
+        | "health"
+        | "disaster"
+        | "political"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -279,6 +334,14 @@ export const Constants = {
       alert_type: ["cluster", "movement", "airspace", "proximity"],
       entity_classification: ["military", "civilian", "unknown"],
       entity_type: ["aircraft", "ship", "base", "strategic", "alert"],
+      event_category: [
+        "military",
+        "economy",
+        "trade",
+        "health",
+        "disaster",
+        "political",
+      ],
     },
   },
 } as const
