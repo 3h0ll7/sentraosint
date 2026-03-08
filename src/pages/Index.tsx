@@ -65,18 +65,21 @@ export default function Index() {
   };
 
   return (
-    <div className="h-screen w-screen flex flex-col overflow-hidden bg-background">
+    <div className="h-screen w-screen flex flex-col overflow-hidden bg-background relative">
+      {/* Matrix Rain Background */}
+      <MatrixRain />
+
       {/* Breaking Alert Banner */}
       <GlobalAlertBanner alert={breakingAlert} onDismiss={dismissBreaking} />
 
       {/* Header */}
-      <header className="flex items-center justify-between px-4 py-2 bg-card border-b border-border flex-shrink-0">
+      <header className="flex items-center justify-between px-4 py-2 bg-card/90 backdrop-blur-sm border-b border-border flex-shrink-0 relative z-10 matrix-border">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
-            <Radar className="w-5 h-5 text-primary" />
-            <h1 className="text-sm font-bold font-mono tracking-wider text-primary">OSINT OVERWATCH</h1>
+            <Radar className="w-5 h-5 text-primary animate-glow-pulse" />
+            <h1 className="text-sm font-bold font-mono tracking-[0.2em] text-primary matrix-glow">OSINT OVERWATCH</h1>
           </div>
-          <span className="text-[9px] font-mono text-muted-foreground px-1.5 py-0.5 rounded bg-secondary">
+          <span className="text-[9px] font-mono text-primary/60 px-1.5 py-0.5 rounded bg-primary/5 border border-primary/20">
             GLOBAL INTELLIGENCE
           </span>
         </div>
