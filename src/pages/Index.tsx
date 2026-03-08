@@ -51,6 +51,10 @@ export default function Index() {
     dismissBreaking,
   } = useGlobalEvents(30000);
 
+  const {
+    feedStatus, fetchOpenSky, fetchEarthquakes, fetchFIRMS, fetchGDACS, fetchAll,
+  } = useOSINTFeeds();
+
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [selectedEntity, setSelectedEntity] = useState<MapEntity | null>(null);
   const [showGrid, setShowGrid] = useState(true);
