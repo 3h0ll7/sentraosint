@@ -17,6 +17,7 @@ const initialStatus: FeedStatus = {
   firms: { loading: false, lastFetch: null, count: 0 },
   gdacs: { loading: false, lastFetch: null, count: 0 },
   news: { loading: false, lastFetch: null, count: 0 },
+  googleNews: { loading: false, lastFetch: null, count: 0 },
 };
 
 export function useOSINTFeeds() {
